@@ -1,0 +1,274 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.0.3 Chrome/140.0.7339.249 Electron/38.7.0 Safari/537.36" version="29.0.3">
+  <diagram name="Page-1" id="fHaw9g7UA4-ph29DpwBF">
+    <mxGraphModel dx="1766" dy="965" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="APfO2OdgVeMfBEN6vODo-35" value="Layer 5: Consumption" style="whiteSpace=wrap;strokeWidth=2;fillColor=#f8cecc;strokeColor=#b85450;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="1744" y="2207" width="510" height="178" as="geometry" />
+        </mxCell>
+        <mxCell id="APfO2OdgVeMfBEN6vODo-36" value="Layer 4: Data Access &amp; Serving" style="whiteSpace=wrap;strokeWidth=2;fillColor=#e1d5e7;strokeColor=#9673a6;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="70" y="1920" width="1477" height="415" as="geometry" />
+        </mxCell>
+        <mxCell id="APfO2OdgVeMfBEN6vODo-37" value="AI Agent Service" style="whiteSpace=wrap;strokeWidth=2;dashed=1;fillColor=none;strokeColor=#666666;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="93" y="2182" width="1550" height="128" as="geometry" />
+        </mxCell>
+        <mxCell id="APfO2OdgVeMfBEN6vODo-38" value="Layer 3: Data Persistence (OLTP)" style="whiteSpace=wrap;strokeWidth=2;fillColor=#ffe6cc;strokeColor=#d79b00;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="1567" y="1712" width="792" height="370" as="geometry" />
+        </mxCell>
+        <mxCell id="APfO2OdgVeMfBEN6vODo-39" value="Schema Domains" style="whiteSpace=wrap;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="1768" y="1945" width="571" height="113" as="geometry" />
+        </mxCell>
+        <mxCell id="APfO2OdgVeMfBEN6vODo-40" value="Layer 2: Data Ingestion &amp; Transformation (ETL)" style="whiteSpace=wrap;strokeWidth=2;fillColor=#d5e8d4;strokeColor=#82b366;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="1702.5" y="1388" width="521" height="250" as="geometry" />
+        </mxCell>
+        <mxCell id="APfO2OdgVeMfBEN6vODo-41" value="Layer 1: Source Systems" style="whiteSpace=wrap;strokeWidth=2;fillColor=#dae8fc;strokeColor=#6c8ebf;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="1681.5" y="1090" width="542" height="154" as="geometry" />
+        </mxCell>
+        <mxCell id="APfO2OdgVeMfBEN6vODo-42" value="Events Data&#xa;(CSV)" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=10;strokeWidth=2;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="1704" y="1130" width="99" height="96" as="geometry" />
+        </mxCell>
+        <mxCell id="APfO2OdgVeMfBEN6vODo-43" value="Customer Data&#xa;(CSV)" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=10;strokeWidth=2;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="1900" y="1180" width="90" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="APfO2OdgVeMfBEN6vODo-44" value="Infrastructure Data&#xa;(CSV)" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=10;strokeWidth=2;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="2047.5" y="1140" width="132.5" height="94" as="geometry" />
+        </mxCell>
+        <mxCell id="APfO2OdgVeMfBEN6vODo-45" value="seed_data.py&#xa;(Python ETL Pipeline)" style="strokeWidth=2;shape=process;whiteSpace=wrap;size=0.04;" vertex="1" parent="1">
+          <mxGeometry x="1770" y="1413" width="184" height="63" as="geometry" />
+        </mxCell>
+        <mxCell id="APfO2OdgVeMfBEN6vODo-46" value="SQLAlchemy Models&#xa;(Data Mapping / Validation)" style="strokeWidth=2;shape=process;whiteSpace=wrap;size=0.04;" vertex="1" parent="1">
+          <mxGeometry x="1718" y="1550" width="229" height="63" as="geometry" />
+        </mxCell>
+        <mxCell id="APfO2OdgVeMfBEN6vODo-47" value="GigaPulse DB&#xa;(SQLite Relational Store)" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=10;strokeWidth=2;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="1766" y="1737" width="192" height="108" as="geometry" />
+        </mxCell>
+        <mxCell id="APfO2OdgVeMfBEN6vODo-48" value="Outages" style="whiteSpace=wrap;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="1803" y="1974" width="118" height="54" as="geometry" />
+        </mxCell>
+        <mxCell id="APfO2OdgVeMfBEN6vODo-49" value="Customers" style="whiteSpace=wrap;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="1971" y="1974" width="134" height="54" as="geometry" />
+        </mxCell>
+        <mxCell id="APfO2OdgVeMfBEN6vODo-50" value="Assets/Fiber" style="whiteSpace=wrap;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="2155" y="1974" width="149" height="54" as="geometry" />
+        </mxCell>
+        <mxCell id="APfO2OdgVeMfBEN6vODo-51" value="FastAPI Backend&#xa;(REST Protocol)" style="strokeWidth=2;shape=process;whiteSpace=wrap;size=0.04;" vertex="1" parent="1">
+          <mxGeometry x="582" y="1970" width="148" height="63" as="geometry" />
+        </mxCell>
+        <mxCell id="APfO2OdgVeMfBEN6vODo-52" value="WebSocket Server&#xa;(Real-time Streams)" style="strokeWidth=2;shape=process;whiteSpace=wrap;size=0.04;" vertex="1" parent="1">
+          <mxGeometry x="1350" y="2050" width="174" height="63" as="geometry" />
+        </mxCell>
+        <mxCell id="APfO2OdgVeMfBEN6vODo-53" value="Graph Query Engine&#xa;(NetworkX / Recursive SQL)" style="strokeWidth=2;shape=process;whiteSpace=wrap;size=0.04;" vertex="1" parent="1">
+          <mxGeometry x="831" y="1974" width="229" height="63" as="geometry" />
+        </mxCell>
+        <mxCell id="APfO2OdgVeMfBEN6vODo-54" value="Circuit Charlie" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=10;strokeWidth=2;whiteSpace=wrap;fillColor=#d80073;fontColor=#ffffff;strokeColor=#A50040;" vertex="1" parent="1">
+          <mxGeometry x="343" y="2207" width="130" height="78" as="geometry" />
+        </mxCell>
+        <mxCell id="APfO2OdgVeMfBEN6vODo-55" value="Sentiment Sophie" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=10;strokeWidth=2;whiteSpace=wrap;fillColor=#d80073;fontColor=#ffffff;strokeColor=#A50040;" vertex="1" parent="1">
+          <mxGeometry x="573" y="2207" width="130" height="78" as="geometry" />
+        </mxCell>
+        <mxCell id="APfO2OdgVeMfBEN6vODo-56" value="Deep End Loui" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=10;strokeWidth=2;whiteSpace=wrap;fillColor=#d80073;fontColor=#ffffff;strokeColor=#A50040;" vertex="1" parent="1">
+          <mxGeometry x="803" y="2207" width="130" height="78" as="geometry" />
+        </mxCell>
+        <mxCell id="APfO2OdgVeMfBEN6vODo-57" value="Web Application&#xa;(Data Visualization)" style="whiteSpace=wrap;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="1779" y="2207" width="200" height="78" as="geometry" />
+        </mxCell>
+        <mxCell id="APfO2OdgVeMfBEN6vODo-58" value="Topology Graph&#xa;(Interactive View)" style="whiteSpace=wrap;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="2029" y="2207" width="189" height="78" as="geometry" />
+        </mxCell>
+        <mxCell id="APfO2OdgVeMfBEN6vODo-59" value="Batch Read" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=0.24;entryY=0;rounded=0;" edge="1" parent="1" source="APfO2OdgVeMfBEN6vODo-42" target="APfO2OdgVeMfBEN6vODo-45">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1775" y="1388" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="APfO2OdgVeMfBEN6vODo-60" value="Batch Read" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=0.72;entryY=0;rounded=0;" edge="1" parent="1" source="APfO2OdgVeMfBEN6vODo-43" target="APfO2OdgVeMfBEN6vODo-45">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1935" y="1388" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="APfO2OdgVeMfBEN6vODo-61" value="Batch Read" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=1;entryY=0.19;rounded=0;" edge="1" parent="1" source="APfO2OdgVeMfBEN6vODo-44" target="APfO2OdgVeMfBEN6vODo-45">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="2122" y="1388" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="APfO2OdgVeMfBEN6vODo-62" value="Validates &amp; Transforms" style="curved=1;startArrow=none;endArrow=block;exitX=0.43;exitY=1;entryX=0.5;entryY=0;rounded=0;" edge="1" parent="1" source="APfO2OdgVeMfBEN6vODo-45" target="APfO2OdgVeMfBEN6vODo-46">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1833" y="1513" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="APfO2OdgVeMfBEN6vODo-63" value="Writes/Upserts" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=1;entryX=0.4;entryY=0;rounded=0;" edge="1" parent="1" source="APfO2OdgVeMfBEN6vODo-46" target="APfO2OdgVeMfBEN6vODo-47">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1833" y="1712" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="APfO2OdgVeMfBEN6vODo-64" value="" style="curved=1;startArrow=none;endArrow=none;exitX=0.5;exitY=1.01;entryX=0.5;entryY=0;rounded=0;" edge="1" parent="1" source="APfO2OdgVeMfBEN6vODo-47" target="APfO2OdgVeMfBEN6vODo-48">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="APfO2OdgVeMfBEN6vODo-65" value="" style="curved=1;startArrow=none;endArrow=none;exitX=1;exitY=0.96;entryX=0.5;entryY=0;rounded=0;" edge="1" parent="1" source="APfO2OdgVeMfBEN6vODo-47" target="APfO2OdgVeMfBEN6vODo-49">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="2038" y="1883" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="APfO2OdgVeMfBEN6vODo-66" value="" style="curved=1;startArrow=none;endArrow=none;exitX=1;exitY=0.72;entryX=0.5;entryY=0;rounded=0;" edge="1" parent="1" source="APfO2OdgVeMfBEN6vODo-47" target="APfO2OdgVeMfBEN6vODo-50">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="2230" y="1883" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="APfO2OdgVeMfBEN6vODo-67" value="SQL Queries" style="curved=1;startArrow=block;endArrow=block;exitX=0;exitY=0.85;entryX=1;entryY=0.43;rounded=0;" edge="1" parent="1" source="APfO2OdgVeMfBEN6vODo-47" target="APfO2OdgVeMfBEN6vODo-51">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1630" y="1883" />
+              <mxPoint x="1630" y="1945" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="APfO2OdgVeMfBEN6vODo-68" value="Graph Traversal" style="curved=1;startArrow=block;endArrow=block;exitX=0.15;exitY=1.01;entryX=1;entryY=0.37;rounded=0;" edge="1" parent="1" source="APfO2OdgVeMfBEN6vODo-47" target="APfO2OdgVeMfBEN6vODo-53">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1748" y="1883" />
+              <mxPoint x="1748" y="1945" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="APfO2OdgVeMfBEN6vODo-69" value="Task Handoff" style="curved=1;startArrow=block;endArrow=block;exitX=0;exitY=0.5;entryX=0.5;entryY=0;rounded=0;" edge="1" parent="1" source="APfO2OdgVeMfBEN6vODo-51" target="APfO2OdgVeMfBEN6vODo-54">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="408" y="2100" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="APfO2OdgVeMfBEN6vODo-70" value="Task Handoff" style="curved=1;startArrow=block;endArrow=block;exitX=0.25;exitY=1;entryX=0.5;entryY=0;rounded=0;" edge="1" parent="1" source="APfO2OdgVeMfBEN6vODo-51" target="APfO2OdgVeMfBEN6vODo-55">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="638" y="2100" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="APfO2OdgVeMfBEN6vODo-71" value="Task Handoff" style="curved=1;startArrow=block;endArrow=block;exitX=0.75;exitY=1;entryX=0.5;entryY=0;rounded=0;" edge="1" parent="1" source="APfO2OdgVeMfBEN6vODo-51" target="APfO2OdgVeMfBEN6vODo-56">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="868" y="2100" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="APfO2OdgVeMfBEN6vODo-72" value="Sub-graph Data" style="curved=1;startArrow=none;endArrow=block;exitX=0;exitY=0.66;entryX=0.48;entryY=-0.01;rounded=0;" edge="1" parent="1" source="APfO2OdgVeMfBEN6vODo-53" target="APfO2OdgVeMfBEN6vODo-54">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="282" y="2058" />
+              <mxPoint x="282" y="2182" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="APfO2OdgVeMfBEN6vODo-73" value="Sub-graph Data" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=0.99;entryX=0.47;entryY=0;rounded=0;" edge="1" parent="1" source="APfO2OdgVeMfBEN6vODo-53" target="APfO2OdgVeMfBEN6vODo-56">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="899" y="2182" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="APfO2OdgVeMfBEN6vODo-74" value="JSON Response" style="curved=1;startArrow=none;endArrow=block;exitX=1;exitY=0.63;entryX=0;entryY=0.38;rounded=0;" edge="1" parent="1" source="APfO2OdgVeMfBEN6vODo-51" target="APfO2OdgVeMfBEN6vODo-57">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1158" y="2058" />
+              <mxPoint x="1158" y="2182" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="APfO2OdgVeMfBEN6vODo-75" value="Node/Edge List" style="curved=1;startArrow=none;endArrow=block;exitX=1;exitY=0.76;entryX=0;entryY=0.36;rounded=0;" edge="1" parent="1" source="APfO2OdgVeMfBEN6vODo-53" target="APfO2OdgVeMfBEN6vODo-57">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1286" y="2058" />
+              <mxPoint x="1286" y="2182" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="APfO2OdgVeMfBEN6vODo-76" value="Push Notifications" style="curved=1;startArrow=none;endArrow=block;exitX=0.5;exitY=0.99;entryX=0;entryY=0.38;rounded=0;" edge="1" parent="1" source="APfO2OdgVeMfBEN6vODo-52" target="APfO2OdgVeMfBEN6vODo-58">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1425" y="2182" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="APfO2OdgVeMfBEN6vODo-77" value="Analysis Results" style="curved=1;dashed=1;dashPattern=2 3;startArrow=none;endArrow=block;exitX=0.5;exitY=0;entryX=0.12;entryY=1;rounded=0;" edge="1" parent="1" source="APfO2OdgVeMfBEN6vODo-54" target="APfO2OdgVeMfBEN6vODo-51">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="408" y="2150" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="APfO2OdgVeMfBEN6vODo-78" value="Analysis Results" style="curved=1;dashed=1;dashPattern=2 3;startArrow=none;endArrow=block;exitX=0.5;exitY=0;entryX=0.29;entryY=1;rounded=0;" edge="1" parent="1" source="APfO2OdgVeMfBEN6vODo-55" target="APfO2OdgVeMfBEN6vODo-51">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="638" y="2150" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="APfO2OdgVeMfBEN6vODo-79" value="Analysis Results" style="curved=1;dashed=1;dashPattern=2 3;startArrow=none;endArrow=block;exitX=0.5;exitY=0;entryX=0.5;entryY=1;rounded=0;" edge="1" parent="1" source="APfO2OdgVeMfBEN6vODo-56" target="APfO2OdgVeMfBEN6vODo-51">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="868" y="2150" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="APfO2OdgVeMfBEN6vODo-80" value="Pipeline Trigger" style="curved=1;dashed=1;dashPattern=2 3;startArrow=none;endArrow=block;exitX=0.94;exitY=1;entryX=1;entryY=0.1;rounded=0;" edge="1" parent="1" source="APfO2OdgVeMfBEN6vODo-45" target="APfO2OdgVeMfBEN6vODo-47">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="2038" y="1513" />
+              <mxPoint x="2038" y="1712" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="APfO2OdgVeMfBEN6vODo-101" value="Priority Parker" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=10;strokeWidth=2;whiteSpace=wrap;fillColor=#d80073;fontColor=#ffffff;strokeColor=#A50040;" vertex="1" parent="1">
+          <mxGeometry x="1033" y="2207" width="130" height="78" as="geometry" />
+        </mxCell>
+        <mxCell id="APfO2OdgVeMfBEN6vODo-102" value="Dispatch Dana" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=10;strokeWidth=2;whiteSpace=wrap;fillColor=#d80073;fontColor=#ffffff;strokeColor=#A50040;" vertex="1" parent="1">
+          <mxGeometry x="1263" y="2207" width="130" height="78" as="geometry" />
+        </mxCell>
+        <mxCell id="APfO2OdgVeMfBEN6vODo-103" value="Task Handoff" style="curved=1;startArrow=block;endArrow=block;exitX=1;exitY=0.5;entryX=0.5;entryY=0;rounded=0;" edge="1" parent="1" source="APfO2OdgVeMfBEN6vODo-51" target="APfO2OdgVeMfBEN6vODo-101">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1098" y="2100" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="APfO2OdgVeMfBEN6vODo-104" value="Task Handoff" style="curved=1;startArrow=block;endArrow=block;exitX=1;exitY=0.5;entryX=0.5;entryY=0;rounded=0;" edge="1" parent="1" source="APfO2OdgVeMfBEN6vODo-51" target="APfO2OdgVeMfBEN6vODo-102">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1328" y="2100" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="APfO2OdgVeMfBEN6vODo-105" value="Analysis Results" style="curved=1;dashed=1;dashPattern=2 3;startArrow=none;endArrow=block;exitX=0.5;exitY=0;entryX=0.7;entryY=1;rounded=0;" edge="1" parent="1" source="APfO2OdgVeMfBEN6vODo-101" target="APfO2OdgVeMfBEN6vODo-51">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1098" y="2150" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="APfO2OdgVeMfBEN6vODo-106" value="Analysis Results" style="curved=1;dashed=1;dashPattern=2 3;startArrow=none;endArrow=block;exitX=0.5;exitY=0;entryX=0.86;entryY=1;rounded=0;" edge="1" parent="1" source="APfO2OdgVeMfBEN6vODo-102" target="APfO2OdgVeMfBEN6vODo-51">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1328" y="2150" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

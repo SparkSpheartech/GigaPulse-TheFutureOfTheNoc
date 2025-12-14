@@ -1,0 +1,2992 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GigaPulse - Network Operations Intelligence Platform</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #141928;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #FF0037, #FF0037aa);
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(255, 0, 55, 0.2);
+            position: relative;
+            z-index: 1000;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .pulse-icon {
+            width: 20px;
+            height: 20px;
+            background: #96FFF5;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.1); }
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 14px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            background: rgba(150, 255, 245, 0.1);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #96FFF5;
+            animation: pulse 1.5s infinite;
+        }
+
+        .main-container {
+            display: flex;
+            height: calc(100vh - 60px);
+        }
+
+        .sidebar {
+            width: 380px;
+            background: rgba(20, 25, 40, 0.95);
+            border-right: 1px solid rgba(150, 255, 245, 0.2);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .tabs {
+            display: flex;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px 6px;
+            text-align: center;
+            cursor: pointer;
+            background: transparent;
+            border: none;
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+        }
+
+        .tab.active {
+            background: rgba(255, 0, 55, 0.1);
+            border-bottom-color: #FF0037;
+            color: #FF0037;
+        }
+
+        .tab:hover:not(.active) {
+            background: rgba(150, 255, 245, 0.05);
+            color: #96FFF5;
+        }
+
+        .tab-content {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #FF0037 transparent;
+        }
+
+        .ai-agent {
+            background: rgba(150, 255, 245, 0.1);
+            border: 1px solid rgba(150, 255, 245, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .ai-agent:hover {
+            background: rgba(150, 255, 245, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .ai-agent.active {
+            border-color: #FF0037;
+            background: rgba(255, 0, 55, 0.1);
+        }
+
+        .agent-workflow-chain {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 20px;
+            height: 20px;
+            background: #FF0037;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .ai-agent.workflow-active .agent-workflow-chain {
+            opacity: 1;
+            animation: workflowPulse 2s infinite;
+        }
+
+        @keyframes workflowPulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.8; }
+        }
+
+        .agent-name {
+            font-weight: 600;
+            color: #96FFF5;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .agent-role {
+            font-size: 11px;
+            color: #ffffff88;
+            margin-bottom: 8px;
+        }
+
+        .agent-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+        }
+
+        .agent-status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #00ff88;
+            animation: pulse 1.5s infinite;
+        }
+
+        .troubleshooting-tip {
+            background: rgba(255, 165, 0, 0.1);
+            border: 1px solid rgba(255, 165, 0, 0.3);
+            border-radius: 6px;
+            padding: 8px;
+            margin-top: 8px;
+            font-size: 10px;
+            color: #FFA500;
+            display: none;
+        }
+
+        .ai-agent.louie .troubleshooting-tip {
+            display: block;
+        }
+
+        .metric-card {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 8px;
+        }
+
+        .metric-label {
+            font-size: 10px;
+            color: #ffffff66;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .metric-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .metric-change {
+            font-size: 10px;
+            margin-top: 2px;
+        }
+
+        .metric-up { color: #ff4444; }
+        .metric-down { color: #00ff88; }
+
+        .time-series-chart {
+            width: 100%;
+            height: 60px;
+            margin-top: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .predictive-analytics {
+            background: rgba(255, 0, 55, 0.1);
+            border: 1px solid rgba(255, 0, 55, 0.3);
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 8px;
+            font-size: 11px;
+        }
+
+        .analytics-title {
+            font-weight: 600;
+            color: #FF0037;
+            margin-bottom: 6px;
+        }
+
+        .correlation-indicator {
+            display: flex;
+            align-items: center;
+            margin-bottom: 4px;
+            font-size: 10px;
+        }
+
+        .correlation-arrow {
+            margin: 0 6px;
+            color: #FF0037;
+        }
+
+        .alert-card {
+            border-left: 4px solid;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 0 6px 6px 0;
+            font-size: 12px;
+        }
+
+        .alert-critical {
+            background: rgba(255, 0, 55, 0.1);
+            border-left-color: #FF0037;
+        }
+
+        .alert-warning {
+            background: rgba(255, 255, 0, 0.1);
+            border-left-color: #FFFF00;
+        }
+
+        .alert-normal {
+            background: rgba(0, 255, 136, 0.1);
+            border-left-color: #00FF88;
+        }
+
+        .alert-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .alert-time {
+            color: #ffffff66;
+            font-size: 10px;
+        }
+
+        .graph-container {
+            flex: 1;
+            position: relative;
+            background: radial-gradient(circle at center, #1a1f35 0%, #141928 100%);
+        }
+
+        .graph-svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .node {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .node:hover {
+            transform: scale(1.1);
+        }
+
+        .node-child {
+            opacity: 0.8;
+            stroke-width: 1.5;
+        }
+
+        .node-child:hover {
+            opacity: 1;
+            stroke-width: 2;
+        }
+
+        .node-outage { 
+            fill: #FF0037; 
+            stroke: #FF0037; 
+            stroke-width: 3;
+        }
+        
+        .node-outage.hub {
+            animation: criticalPulse 1.5s infinite;
+            filter: drop-shadow(0 0 8px #FF0037);
+        }
+        
+        .node-clli.hub {
+            animation: hubGlow 2s infinite;
+            filter: drop-shadow(0 0 6px #FFD700);
+        }
+        
+        @keyframes criticalPulse {
+            0%, 100% { 
+                stroke-width: 3; 
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% { 
+                stroke-width: 6; 
+                opacity: 0.8;
+                transform: scale(1.1);
+            }
+        }
+        
+        @keyframes hubGlow {
+            0%, 100% { 
+                filter: drop-shadow(0 0 6px #FFD700);
+                opacity: 1;
+            }
+            50% { 
+                filter: drop-shadow(0 0 12px #FFD700);
+                opacity: 0.9;
+            }
+        }
+        .node-customer { fill: #4169E1; stroke: #6495ED; stroke-width: 2; }
+        .node-business { fill: #191970; stroke: #4169E1; stroke-width: 2; }
+        .node-internal { fill: #000080; stroke: #191970; stroke-width: 2; }
+        .node-agent { fill: #32CD32; stroke: #00FF00; stroke-width: 2; }
+        .node-supervisor { fill: #228B22; stroke: #32CD32; stroke-width: 2; }
+        .node-noc { fill: #006400; stroke: #228B22; stroke-width: 2; }
+        .node-engineer { fill: #00CED1; stroke: #48D1CC; stroke-width: 2; }
+        .node-crew { fill: #FFD700; stroke: #FFA500; stroke-width: 2; }
+        .node-infrastructure { fill: #FF8C00; stroke: #FF6347; stroke-width: 2; }
+        .node-equipment { fill: #9370DB; stroke: #BA55D3; stroke-width: 2; }
+        .node-clli { fill: #FFD700; stroke: #FFA500; stroke-width: 3; }
+        .node-timeline { fill: #808080; stroke: #A9A9A9; stroke-width: 1; }
+        .node-ai-agent { fill: #96FFF5; stroke: #00FFFF; stroke-width: 3; animation: pulse 2s infinite; }
+        .node-network-component { opacity: 0.85; }
+
+        .link {
+            stroke: rgba(150, 255, 245, 0.4);
+            stroke-width: 1;
+            fill: none;
+        }
+
+        .link-critical { stroke: #FF0037; stroke-width: 3; }
+        .link-high { stroke: #FFA500; stroke-width: 2; }
+        .link-medium { stroke: rgba(150, 255, 245, 0.6); stroke-width: 1.5; }
+        .link-expansion { 
+            stroke: rgba(150, 255, 245, 0.6);
+            stroke-width: 2;
+            stroke-dasharray: 5,5;
+        }
+
+        .link-workflow {
+            stroke: rgba(255, 255, 255, 0.8);
+            stroke-width: 2;
+            stroke-dasharray: 3,3;
+        }
+
+        .node-label {
+            font-size: 11px;
+            fill: #ffffff;
+            text-anchor: middle;
+            pointer-events: none;
+            font-weight: 500;
+        }
+
+        .chat-panel {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 420px;
+            height: 500px;
+            background: rgba(20, 25, 40, 0.95);
+            border: 1px solid rgba(150, 255, 245, 0.3);
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+        }
+
+        .chat-panel.minimized {
+            height: 60px;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #FF0037, #FF0037aa);
+            padding: 12px 16px;
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .chat-header:hover {
+            background: linear-gradient(135deg, #FF0037, #FF0037cc);
+        }
+
+        .chat-header-left {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .chat-minimize-btn {
+            background: none;
+            border: none;
+            color: #ffffff;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            line-height: 1;
+        }
+
+        .chat-minimize-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: scale(1.1);
+        }
+
+        .chat-title {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .workflow-chain-indicator {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 10px;
+        }
+
+        .chain-step {
+            padding: 2px 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            border: 1px solid transparent;
+        }
+
+        .chain-step.active {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .chain-step.completed {
+            background: rgba(0, 255, 136, 0.2);
+            border-color: #00FF88;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 12px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #FF0037 transparent;
+        }
+
+        .chat-input-container {
+            padding: 12px;
+            border-top: 1px solid rgba(150, 255, 245, 0.2);
+        }
+
+        .chat-input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(150, 255, 245, 0.3);
+            border-radius: 6px;
+            padding: 8px 12px;
+            color: #ffffff;
+            font-size: 13px;
+            outline: none;
+        }
+
+        .chat-input:focus {
+            border-color: #FF0037;
+        }
+
+        .message {
+            margin-bottom: 12px;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        .message.user {
+            background: rgba(255, 0, 55, 0.1);
+            border-left: 3px solid #FF0037;
+            margin-left: 20px;
+        }
+
+        .message.ai {
+            background: rgba(150, 255, 245, 0.1);
+            border-left: 3px solid #96FFF5;
+            margin-right: 20px;
+        }
+
+        .message .sender {
+            font-weight: 600;
+            font-size: 12px;
+            margin-bottom: 6px;
+            opacity: 0.9;
+        }
+
+        .message-actions {
+            margin-top: 10px;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            background: rgba(255, 0, 55, 0.2);
+            border: 1px solid #FF0037;
+            color: #FF0037;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .action-btn:hover {
+            background: rgba(255, 0, 55, 0.3);
+        }
+
+        .action-btn.approve {
+            background: rgba(0, 255, 136, 0.2);
+            border-color: #00FF88;
+            color: #00FF88;
+        }
+
+        .action-btn.approve:hover {
+            background: rgba(0, 255, 136, 0.3);
+        }
+
+        .action-btn.handoff {
+            background: rgba(255, 165, 0, 0.2);
+            border-color: #FFA500;
+            color: #FFA500;
+        }
+
+        .action-btn.handoff:hover {
+            background: rgba(255, 165, 0, 0.3);
+        }
+
+        .controls {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+        }
+
+        .control-btn {
+            background: rgba(20, 25, 40, 0.9);
+            border: 1px solid rgba(150, 255, 245, 0.3);
+            color: #96FFF5;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .control-btn:hover {
+            background: rgba(150, 255, 245, 0.1);
+            border-color: #96FFF5;
+        }
+
+        .control-btn.active {
+            background: rgba(255, 0, 55, 0.2);
+            border-color: #FF0037;
+            color: #FF0037;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid rgba(150, 255, 245, 0.3);
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 11px;
+            color: #ffffff;
+            pointer-events: auto;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            max-width: 350px;
+        }
+
+        .tooltip-troubleshoot {
+            background: rgba(255, 165, 0, 0.9);
+            border-color: #FFA500;
+            color: #000000;
+        }
+
+        .notification {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: rgba(255, 0, 55, 0.9);
+            border: 1px solid #FF0037;
+            border-radius: 8px;
+            padding: 12px 16px;
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 500;
+            z-index: 1001;
+            animation: slideIn 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .scenario-controls {
+            padding: 10px 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid rgba(150, 255, 245, 0.2);
+        }
+
+        .scenario-btn {
+            background: transparent;
+            border: 1px solid rgba(150, 255, 245, 0.3);
+            color: #96FFF5;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+            margin-right: 8px;
+            margin-bottom: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .scenario-btn:hover {
+            background: rgba(150, 255, 245, 0.1);
+        }
+
+        .scenario-btn.active {
+            background: rgba(255, 0, 55, 0.2);
+            border-color: #FF0037;
+            color: #FF0037;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid rgba(150, 255, 245, 0.3);
+            border-top: 2px solid #96FFF5;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 6px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .workflow-indicator {
+            background: rgba(150, 255, 245, 0.1);
+            border: 1px solid rgba(150, 255, 245, 0.3);
+            border-radius: 6px;
+            padding: 8px;
+            margin-top: 8px;
+            font-size: 11px;
+            color: #96FFF5;
+        }
+
+        .probability-indicator {
+            background: rgba(255, 165, 0, 0.2);
+            border: 1px solid #FFA500;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 11px;
+            color: #FFA500;
+            font-weight: 600;
+            margin-top: 6px;
+            display: inline-block;
+        }
+
+        .remote-resolution-tip {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            border-radius: 4px;
+            padding: 6px 8px;
+            font-size: 10px;
+            color: #00FF88;
+            margin-top: 6px;
+            display: inline-block;
+        }
+
+        .expansion-hint {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: #96FFF5;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            border: 1px solid rgba(150, 255, 245, 0.3);
+        }
+
+        .legend {
+            position: absolute;
+            top: 140px;
+            left: 20px;
+            background: rgba(20, 25, 40, 0.95);
+            border: 1px solid rgba(150, 255, 245, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 11px;
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            max-width: 200px;
+        }
+
+        .legend-title {
+            font-weight: 600;
+            color: #96FFF5;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 4px;
+            gap: 8px;
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .legend-dot.outage { background: #FF0037; animation: pulse 2s infinite; }
+        .legend-dot.clli { background: #FFD700; }
+        .legend-dot.infrastructure { background: #FF8C00; }
+        .legend-dot.equipment { background: #9370DB; }
+        .legend-dot.customer { background: #4169E1; }
+        .legend-dot.crew { background: #FFD700; }
+        .legend-dot.agent { background: #32CD32; }
+
+        .legend-text {
+            color: #ffffff;
+        }
+
+        .legend-section {
+            margin-bottom: 8px;
+        }
+
+        .legend-section-title {
+            font-weight: 600;
+            color: #96FFF5;
+            font-size: 10px;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+
+        .legend-toggle {
+            position: absolute;
+            top: 100px;
+            left: 20px;
+            background: rgba(20, 25, 40, 0.9);
+            border: 1px solid rgba(150, 255, 245, 0.3);
+            color: #96FFF5;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            z-index: 100;
+        }
+
+        .legend-toggle:hover {
+            background: rgba(150, 255, 245, 0.1);
+        }
+
+        .analytics-dashboard {
+            position: absolute;
+            top: 70px;
+            left: 20px;
+            width: 600px;
+            background: rgba(20, 25, 40, 0.95);
+            border: 1px solid rgba(150, 255, 245, 0.3);
+            border-radius: 8px;
+            padding: 16px;
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            display: none;
+        }
+
+        .analytics-dashboard.visible {
+            display: block;
+        }
+
+        .dashboard-title {
+            font-weight: 600;
+            color: #96FFF5;
+            margin-bottom: 12px;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .dashboard-chart {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 6px;
+            padding: 12px;
+            height: 120px;
+        }
+
+        .chart-title {
+            font-size: 11px;
+            color: #ffffff66;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .predictive-flow {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 0, 55, 0.1);
+            border: 1px solid rgba(255, 0, 55, 0.3);
+            border-radius: 6px;
+            padding: 12px;
+            margin-top: 12px;
+        }
+
+        .flow-step {
+            text-align: center;
+            font-size: 11px;
+        }
+
+        .flow-step-value {
+            font-weight: 600;
+            color: #FF0037;
+            margin-bottom: 2px;
+        }
+
+        .flow-arrow {
+            color: #FF0037;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>
+            <div class="pulse-icon"></div>
+            GigaPulse
+        </h1>
+        <div class="header-right">
+            <div class="status-indicator">
+                <div class="status-dot"></div>
+                Live Monitoring + AI Analytics
+            </div>
+            <div>NOC Dashboard</div>
+            <div>11/18/2024 14:30 PST</div>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="sidebar">
+            <div class="tabs">
+                <button class="tab active" data-tab="agents">AI Agents</button>
+                <button class="tab" data-tab="alerts">Alerts</button>
+                <button class="tab" data-tab="metrics">Metrics</button>
+            </div>
+            
+            <div class="scenario-controls">
+                <button class="scenario-btn active" data-scenario="outage">Live Outage</button>
+                <button class="scenario-btn" data-scenario="normal">Normal Ops</button>
+                <button class="scenario-btn" data-scenario="churn">Churn Analysis</button>
+            </div>
+
+            <div id="agents-tab" class="tab-content">
+                <div class="ai-agent active workflow-active" data-agent="charlie" data-workflow-step="1">
+                    <div class="agent-workflow-chain">1</div>
+                    <div class="agent-name">Circuit Charlie</div>
+                    <div class="agent-role">Diagnostic & Infrastructure Analysis</div>
+                    <div class="agent-status">
+                        <div class="agent-status-dot"></div>
+                        Analyzing fiber trunk damage - 89% confidence
+                    </div>
+                    <div class="troubleshooting-tip">
+                        💡 Remote Diagnostic: OTDR readings suggest fiber break at 2.1mi mark
+                    </div>
+                </div>
+
+                <div class="ai-agent" data-agent="parker" data-workflow-step="2">
+                    <div class="agent-workflow-chain">2</div>
+                    <div class="agent-name">Priority Parker</div>
+                    <div class="agent-role">Alert Triage & Ticket Consolidation</div>
+                    <div class="agent-status">
+                        <div class="agent-status-dot"></div>
+                        5 tickets consolidated - Priority 1
+                    </div>
+                </div>
+
+                <div class="ai-agent" data-agent="dana" data-workflow-step="3">
+                    <div class="agent-workflow-chain">3</div>
+                    <div class="agent-name">Dispatch Dana</div>
+                    <div class="agent-role">Work Order & Circuit Provisioning</div>
+                    <div class="agent-status">
+                        <div class="agent-status-dot"></div>
+                        Field crews dispatched - ETA 47 min
+                    </div>
+                </div>
+
+                <div class="ai-agent" data-agent="sophie" data-workflow-step="4">
+                    <div class="agent-workflow-chain">4</div>
+                    <div class="agent-name">Sentiment Sophie</div>
+                    <div class="agent-role">Customer Experience & Communication</div>
+                    <div class="agent-status">
+                        <div class="agent-status-dot"></div>
+                        SMS alerts sent - Sentiment monitoring
+                    </div>
+                </div>
+
+                <div class="ai-agent louie" data-agent="louie" data-workflow-step="5">
+                    <div class="agent-workflow-chain">5</div>
+                    <div class="agent-name">Deep End Louie</div>
+                    <div class="agent-role">AI Mentoring & Remote Resolution</div>
+                    <div class="agent-status">
+                        <div class="agent-status-dot"></div>
+                        Training NOC staff on remote troubleshooting
+                    </div>
+                    <div class="troubleshooting-tip">
+                        🎓 67% of truck rolls preventable with remote diagnostics. Click for training!
+                    </div>
+                </div>
+            </div>
+
+            <div id="alerts-tab" class="tab-content" style="display: none;">
+                <div class="alert-card alert-critical">
+                    <div class="alert-title">P1 CRITICAL: SF Fiber Trunk Severed</div>
+                    <div>FBR-CA-SNFC-TRUNK-A01 - 2,847 customers</div>
+                    <div class="alert-time">14:30 - Crews dispatched, ETA 43min</div>
+                </div>
+
+                <div class="alert-card alert-critical">
+                    <div class="alert-title">P1 CRITICAL: Oakland OLT Failure</div>
+                    <div>EQ-OAKLCA03-OLT-02 - 892 customers</div>
+                    <div class="alert-time">15:22 - Equipment replacement in progress</div>
+                </div>
+
+                <div class="alert-card alert-critical">
+                    <div class="alert-title">P0 EMERGENCY: Business Fiber Circuit</div>
+                    <div>Metro Bank datacenter - 1 customer, $50K/hr SLA</div>
+                    <div class="alert-time">15:45 - Executive escalation triggered</div>
+                </div>
+
+                <div class="alert-card alert-warning">
+                    <div class="alert-title">P2 WARNING: Vegas Latency Spike</div>
+                    <div>Network segment RTT >150ms - 445 customers</div>
+                    <div class="alert-time">15:18 - Performance monitoring</div>
+                </div>
+
+                <div class="alert-card alert-warning">
+                    <div class="alert-title">P2 WARNING: High Call Volume</div>
+                    <div>Contact center surge - 89% SMS deflection active</div>
+                    <div class="alert-time">Ongoing - Proactive messaging deployed</div>
+                </div>
+
+                <div class="alert-card alert-normal">
+                    <div class="alert-title">P3 NORMAL: Sacramento Maintenance</div>
+                    <div>SACRCA01 scheduled upgrade - 0 customer impact</div>
+                    <div class="alert-time">13:30 - Completed successfully</div>
+                </div>
+
+                <div class="alert-card alert-normal">
+                    <div class="alert-title">RESOLVED: Remote Power Cycle Success</div>
+                    <div>Customer premise equipment - Truck roll avoided</div>
+                    <div class="alert-time">15:15 - Louie's remote fix successful</div>
+                </div>
+            </div>
+
+            <div id="metrics-tab" class="tab-content" style="display: none;">
+                <div class="metric-card">
+                    <div class="metric-label">Customers Affected</div>
+                    <div class="metric-value">4,991</div>
+                    <div class="metric-change metric-up">+4,991 from baseline</div>
+                    <div class="time-series-chart" id="customers-chart"></div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-label">SMS Deflection Rate</div>
+                    <div class="metric-value">91.3%</div>
+                    <div class="metric-change metric-down">Reduced call volume</div>
+                    <div class="time-series-chart" id="deflection-chart"></div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-label">Average NPS</div>
+                    <div class="metric-value">4.2</div>
+                    <div class="metric-change metric-up">Down from 6.2 baseline</div>
+                    <div class="time-series-chart" id="nps-chart"></div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-label">Truck Roll Prevention</div>
+                    <div class="metric-value">67%</div>
+                    <div class="metric-change metric-down">Remote resolution rate</div>
+                    <div class="time-series-chart" id="truckroll-chart"></div>
+                </div>
+
+                <div class="predictive-analytics">
+                    <div class="analytics-title">Predictive Churn Analysis</div>
+                    <div class="correlation-indicator">
+                        <span>Outage Duration (4.2hrs)</span>
+                        <span class="correlation-arrow">→</span>
+                        <span>NPS Drop (-1.8)</span>
+                    </div>
+                    <div class="correlation-indicator">
+                        <span>Sentiment Drop (-0.6)</span>
+                        <span class="correlation-arrow">→</span>
+                        <span>Churn Risk (+21%)</span>
+                    </div>
+                    <div class="correlation-indicator">
+                        <span>High-Value Customers</span>
+                        <span class="correlation-arrow">→</span>
+                        <span style="color: #FF0037;">$284.5K Risk</span>
+                    </div>
+                </div>
+
+                <div class="predictive-analytics">
+                    <div class="analytics-title">Remote Resolution Opportunities</div>
+                    <div class="correlation-indicator">
+                        <span>Power Cycle Success: 34%</span>
+                    </div>
+                    <div class="correlation-indicator">
+                        <span>Config Reset: 23%</span>
+                    </div>
+                    <div class="correlation-indicator">
+                        <span>OTDR Remote Test: 18%</span>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-label">Sentiment Trend</div>
+                    <div class="metric-value">-0.6</div>
+                    <div class="metric-change metric-up">Declining during outages</div>
+                    <div class="time-series-chart" id="sentiment-trend"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="graph-container">
+            <div class="controls">
+                <button class="control-btn active" id="resetView">Reset View</button>
+                <button class="control-btn" id="pauseAnimation">Pause</button>
+                <button class="control-btn" id="expandAll" onclick="handleExpandAll()">Expand All</button>
+                <button class="control-btn" id="showAnalytics">Analytics Dashboard</button>
+            </div>
+            
+            <button class="legend-toggle" id="legendToggle">Legend</button>
+            
+            <div class="legend" id="legend" style="display: none;">
+                <div class="legend-title">Network Topology</div>
+                
+                <div class="legend-section">
+                    <div class="legend-section-title">Critical Elements</div>
+                    <div class="legend-item">
+                        <div class="legend-dot outage"></div>
+                        <span class="legend-text">Critical Outages</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot clli"></div>
+                        <span class="legend-text">Network Hubs (CLLI)</span>
+                    </div>
+                </div>
+                
+                <div class="legend-section">
+                    <div class="legend-section-title">Infrastructure</div>
+                    <div class="legend-item">
+                        <div class="legend-dot infrastructure"></div>
+                        <span class="legend-text">Fiber & Equipment</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot equipment"></div>
+                        <span class="legend-text">Network Devices</span>
+                    </div>
+                </div>
+                
+                <div class="legend-section">
+                    <div class="legend-section-title">Impact & Response</div>
+                    <div class="legend-item">
+                        <div class="legend-dot customer"></div>
+                        <span class="legend-text">Customer Groups</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot crew"></div>
+                        <span class="legend-text">Field Crews</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot agent"></div>
+                        <span class="legend-text">Support Agents</span>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(150, 255, 245, 0.2);">
+                    <div style="color: #96FFF5; font-size: 10px;">
+                        🔄 Double-click nodes to expand<br>
+                        🖱️ Mouse wheel to zoom<br>
+                        ✨ Pulsing = Critical alerts<br>
+                        🎓 Louie's tips = Remote resolution
+                    </div>
+                </div>
+            </div>
+
+            <div class="analytics-dashboard" id="analyticsDashboard">
+                <div class="dashboard-title">Predictive Analytics & Time Series Dashboard</div>
+                <div class="dashboard-grid">
+                    <div class="dashboard-chart">
+                        <div class="chart-title">Customer Sentiment Trend</div>
+                        <div id="sentiment-dashboard-chart"></div>
+                    </div>
+                    <div class="dashboard-chart">
+                        <div class="chart-title">Outage Pattern Analysis</div>
+                        <div id="outage-dashboard-chart"></div>
+                    </div>
+                    <div class="dashboard-chart">
+                        <div class="chart-title">Churn Risk Correlation</div>
+                        <div id="churn-dashboard-chart"></div>
+                    </div>
+                    <div class="dashboard-chart">
+                        <div class="chart-title">Remote Resolution Success</div>
+                        <div id="resolution-dashboard-chart"></div>
+                    </div>
+                </div>
+                <div class="predictive-flow">
+                    <div class="flow-step">
+                        <div class="flow-step-value">4.2 hrs</div>
+                        <div>Outage Duration</div>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step">
+                        <div class="flow-step-value">-1.8 pts</div>
+                        <div>NPS Impact</div>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step">
+                        <div class="flow-step-value">+21%</div>
+                        <div>Churn Risk</div>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step">
+                        <div class="flow-step-value">$284.5K</div>
+                        <div>Revenue Risk</div>
+                    </div>
+                </div>
+            </div>
+            
+            <svg class="graph-svg" id="networkGraph"></svg>
+            <div class="expansion-hint" id="expansionHint">
+                Double-click nodes to drill down into components • Click to analyze with AI agents • Louie provides remote resolution tips
+            </div>
+        </div>
+
+        <div class="chat-panel" id="chatPanel">
+            <div class="chat-header" id="chatHeader">
+                <div class="chat-header-left">
+                    <div class="chat-title">Circuit Charlie</div>
+                    <div class="workflow-chain-indicator">
+                        <div class="chain-step completed">Charlie</div>
+                        <div class="chain-step active">Parker</div>
+                        <div class="chain-step">Dana</div>
+                        <div class="chain-step">Sophie</div>
+                        <div class="chain-step">Louie</div>
+                    </div>
+                </div>
+                <button class="chat-minimize-btn" id="chatMinimizeBtn" title="Minimize/Maximize Chat">−</button>
+            </div>
+            <div class="chat-messages" id="chatMessages">
+                <div class="message ai">
+                    <div class="sender">GigaPulse Enhanced AI</div>
+                    Welcome to GigaPulse Enhanced! Now featuring Deep End Louie's remote troubleshooting intelligence, predictive churn analytics, and seamless AI agent workflows. Try asking about remote resolution opportunities or watch the workflow chain in action!
+                </div>
+            </div>
+            <div class="chat-input-container">
+                <input type="text" class="chat-input" id="chatInput" placeholder="Ask about remote fixes, churn predictions, or workflow handoffs...">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Enhanced tracking for workflow chains and expanded nodes
+        const expandedNodes = new Set();
+        const workflowChain = ['charlie', 'parker', 'dana', 'sophie', 'louie'];
+        let currentWorkflowStep = 0;
+        let currentTooltip = null;
+
+        // Enhanced network graph data with remote resolution capabilities
+        const networkData = {
+            nodes: [
+                // Main California Outage Events with remote resolution tracking
+                { id: "OUT-2024-CA-001", name: "🔥 CRITICAL OUTAGE", type: "outage", size: 35, x: 0, y: 0, customers: 2847, status: "Dispatch Out", priority: "critical", isHub: true, mttr: "2.5 hrs", statusHistory: ["Investigating", "Dispatch Out"], remoteResolutionAttempted: true, remoteResolutionSuccess: false },
+                { id: "OUT-2024-CA-002", name: "🚨 Business Fiber Down", type: "outage", size: 28, x: 80, y: 80, customers: 412, status: "Resolved", priority: "critical", isHub: true, mttr: "1.2 hrs", statusHistory: ["Investigating", "Remote Fix Applied", "Resolved"], remoteResolutionAttempted: true, remoteResolutionSuccess: true },
+                
+                // Additional Outages with remote resolution status
+                { id: "OUT-2024-CA-003", name: "⚠️ Oakland OLT Failure", type: "outage", size: 25, x: -120, y: 180, customers: 892, status: "Remote Reboot Attempted", priority: "critical", isHub: true, mttr: "TBD", statusHistory: ["Investigating", "Remote Reboot Attempted"], remoteResolutionAttempted: true, remoteResolutionSuccess: false },
+                { id: "OUT-2024-CA-004", name: "🔋 Fresno Power Outage", type: "outage", size: 22, x: 280, y: -200, customers: 1247, status: "Generator Active", priority: "critical", isHub: true, mttr: "4.0 hrs", statusHistory: ["Investigating", "Generator Active"], remoteResolutionAttempted: false },
+                { id: "OUT-2024-NV-001", name: "🌐 Vegas Latency Spike", type: "outage", size: 18, x: -280, y: -120, customers: 445, status: "Config Reset Applied", priority: "warning", isHub: true, mttr: "0.5 hr", statusHistory: ["Degraded Service", "Config Reset Applied"], remoteResolutionAttempted: true, remoteResolutionSuccess: true },
+
+                // Infrastructure with remote diagnostic capabilities
+                { id: "FBR-CA-SNFC-TRUNK-A01", name: "SF Main Trunk A01", type: "infrastructure", size: 22, x: 120, y: -120, status: "Severed", priority: "critical", alarmState: "Node Isolated", lastUpdate: "14:30 PST", otdrReading: "15.7dB loss @ 2.1mi", remoteTestResult: "Physical break confirmed" },
+                { id: "FBR-CA-SNFC-TRUNK-A02", name: "SF Secondary Trunk A02", type: "infrastructure", size: 18, x: 180, y: -60, status: "Simplex", priority: "critical", alarmState: "Degraded", lastUpdate: "11:30 PST", otdrReading: "8.2dB loss", remoteTestResult: "Signal degraded" },
+                { id: "FBR-CA-OAKL-TRUNK-B01", name: "Oakland Distribution", type: "infrastructure", size: 16, x: -80, y: 220, status: "Degraded Service", priority: "warning", alarmState: "Minor", lastUpdate: "15:22 PST", remoteTestResult: "Power supply fault detected" },
+
+                // CLLI Locations with remote management capabilities
+                { id: "SNFCCA01", name: "🏢 SF Central Office", type: "clli", size: 25, x: 220, y: 0, customers: 2847, status: "Service Impacted", isHub: true, alarmCount: 14, criticalAlarms: 5, remoteManagementCapable: true },
+                { id: "SNFCCA02", name: "🏢 SF Secondary CO", type: "clli", size: 20, x: 300, y: 80, customers: 1709, status: "Backup Active", isHub: true, alarmCount: 8, criticalAlarms: 2, remoteManagementCapable: true },
+                { id: "OAKLCA03", name: "🏢 Oakland Central", type: "clli", size: 18, x: -60, y: 260, customers: 892, status: "Remote Reboot Failed", isHub: true, alarmCount: 12, criticalAlarms: 7, remoteManagementCapable: true, lastRemoteAttempt: "15:22 PST" },
+
+                // Network Equipment with enhanced remote resolution data
+                { id: "EQ-SNFCCA01-OLT-01", name: "SF OLT-01", type: "equipment", size: 14, x: 240, y: -30, status: "Failed", priority: "critical", lastPing: "N/A", uptime: "0%", alarmState: "Critical", remoteRebootCapable: true, remoteRebootSuccess: false },
+                { id: "EQ-SNFCCA02-OLT-01", name: "SF OLT-02", type: "equipment", size: 12, x: 320, y: 50, status: "Operational", priority: "normal", lastPing: "15:29:45", uptime: "99.9%", alarmState: "Clear", remoteRebootCapable: true },
+                { id: "EQ-OAKLCA03-OLT-02", name: "Oakland OLT-02", type: "equipment", size: 14, x: -40, y: 240, status: "Remote Reboot Failed", priority: "critical", lastPing: "15:22:10", uptime: "0%", alarmState: "Critical", remoteRebootCapable: true, remoteRebootSuccess: false, lastRemoteAttempt: "15:22 PST" },
+
+                // Response Teams with remote resolution capabilities
+                { id: "NOC-OPR-001", name: "James Rodriguez", type: "noc", size: 14, x: -80, y: 140, role: "Lead Technician", shift: "Night", activeTickets: 5, escalations: 2, remoteResolutionSkill: "Expert" },
+                { id: "NOC-OPR-004", name: "Lisa Wang", type: "noc", size: 12, x: -110, y: 120, role: "Senior Analyst", shift: "Night", activeTickets: 3, escalations: 1, remoteResolutionSkill: "Advanced" },
+                { id: "ENG-CA-001", name: "Robert Martinez", type: "engineer", size: 14, x: 0, y: 200, specialization: "GPON", certifications: "Fiber Optics", onCall: true, remoteToolsAccess: true },
+
+                // Field Crews with truck roll prevention metrics
+                { id: "CREW-CA-NOR-012", name: "Thomas Anderson Crew", type: "crew", size: 16, x: 80, y: 140, status: "En Route", eta: "43min", truckRoll: "WO-78451", gpsLocation: "Market St & 10th", truckRollPrevented: false },
+                { id: "CREW-CA-BAY-015", name: "Oakland Response Team", type: "crew", size: 14, x: -100, y: 180, status: "Available", eta: "35min", truckRoll: null, location: "Oakland Staging", truckRollPrevented: true, preventionReason: "Remote power cycle successful" },
+
+                // Customer Segments with enhanced churn risk analytics
+                { id: "CUSTOMERS-RES", name: "Residential (2,458)", type: "customer", size: 16, x: 380, y: -80, count: 2458, sentiment: -0.6, churnRisk: "High", npsChange: -1.8, churnPrediction: "21% increase", revenueAtRisk: "$184.2K" },
+                { id: "CUSTOMERS-BUS", name: "Business (389)", type: "business", size: 14, x: 420, y: 0, count: 389, sentiment: -0.8, churnRisk: "Critical", npsChange: -2.4, churnPrediction: "34% increase", revenueAtRisk: "$100.3K" },
+                { id: "CUSTOMERS-OAKL", name: "Oakland Customers", type: "customer", size: 12, x: 20, y: 320, count: 892, sentiment: -0.7, churnRisk: "High", npsChange: -2.1, churnPrediction: "28% increase", revenueAtRisk: "$67.8K" },
+
+                // Contact Center Agents with sentiment correlation
+                { id: "AGT-CA-001", name: "Sarah Chen", type: "agent", size: 10, x: -140, y: 280, calls: 28, satisfaction: 4.8, avgHandleTime: "6:45", firstCallResolution: "78%", sentimentTrend: "Declining" },
+                { id: "AGT-CA-007", name: "Marcus Torres", type: "agent", size: 10, x: -170, y: 300, calls: 31, satisfaction: 4.2, avgHandleTime: "7:20", firstCallResolution: "72%", sentimentTrend: "Stable" },
+
+                // External Dependencies
+                { id: "CONST-CA-001", name: "CalTrans Construction", type: "infrastructure", size: 18, x: 120, y: -280, liability: "$284.5K", status: "Investigation Complete", contractor: "Bay Area Construction" },
+                { id: "VENDOR-PWR-001", name: "PG&E Fresno", type: "external", size: 12, x: 300, y: -260, status: "ETR: 2-4hrs", ticketNumber: "PGE-2024-11-78451", priority: "Emergency" }
+            ],
+            links: [
+                // Infrastructure damage chain
+                { source: "CONST-CA-001", target: "FBR-CA-SNFC-TRUNK-A01", type: "critical" },
+                { source: "CONST-CA-001", target: "FBR-CA-SNFC-TRUNK-A02", type: "high" },
+                { source: "FBR-CA-SNFC-TRUNK-A01", target: "OUT-2024-CA-001", type: "critical" },
+                { source: "FBR-CA-SNFC-TRUNK-A02", target: "OUT-2024-CA-002", type: "critical" },
+                
+                // Additional infrastructure connections
+                { source: "OUT-2024-CA-003", target: "FBR-CA-OAKL-TRUNK-B01", type: "critical" },
+                { source: "OUT-2024-CA-004", target: "VENDOR-PWR-001", type: "high" },
+                
+                // CLLI connections
+                { source: "FBR-CA-SNFC-TRUNK-A01", target: "SNFCCA01", type: "critical" },
+                { source: "FBR-CA-SNFC-TRUNK-A02", target: "SNFCCA02", type: "high" },
+                { source: "FBR-CA-OAKL-TRUNK-B01", target: "OAKLCA03", type: "critical" },
+                { source: "OUT-2024-CA-001", target: "SNFCCA01", type: "critical" },
+                { source: "OUT-2024-CA-002", target: "SNFCCA02", type: "critical" },
+                { source: "OUT-2024-CA-003", target: "OAKLCA03", type: "critical" },
+                { source: "SNFCCA01", target: "EQ-SNFCCA01-OLT-01", type: "critical" },
+                { source: "SNFCCA02", target: "EQ-SNFCCA02-OLT-01", type: "medium" },
+                { source: "OAKLCA03", target: "EQ-OAKLCA03-OLT-02", type: "critical" },
+                
+                // Customer impact
+                { source: "OUT-2024-CA-001", target: "CUSTOMERS-RES", type: "critical" },
+                { source: "OUT-2024-CA-002", target: "CUSTOMERS-BUS", type: "high" },
+                { source: "OUT-2024-CA-003", target: "CUSTOMERS-OAKL", type: "critical" },
+                
+                // Response chain
+                { source: "OUT-2024-CA-001", target: "NOC-OPR-001", type: "high" },
+                { source: "OUT-2024-CA-003", target: "NOC-OPR-004", type: "high" },
+                { source: "NOC-OPR-001", target: "ENG-CA-001", type: "high" },
+                { source: "ENG-CA-001", target: "CREW-CA-NOR-012", type: "high" },
+                { source: "ENG-CA-001", target: "CREW-CA-BAY-015", type: "medium" },
+                
+                // Customer service
+                { source: "CUSTOMERS-RES", target: "AGT-CA-001", type: "medium" },
+                { source: "CUSTOMERS-OAKL", target: "AGT-CA-007", type: "medium" }
+            ]
+        };
+
+        // Time series data for metrics
+        const timeSeriesData = {
+            customerSentiment: [6.2, 5.8, 5.4, 4.9, 4.5, 4.2],
+            outageCount: [0, 1, 2, 3, 5, 5],
+            churnRisk: [8, 12, 16, 19, 21, 23],
+            truckRollPrevention: [45, 52, 58, 62, 65, 67]
+        };
+
+        // Initialize the D3 force simulation
+        const svg = d3.select("#networkGraph");
+        const width = svg.node().getBoundingClientRect().width;
+        const height = svg.node().getBoundingClientRect().height;
+
+        // Create zoom behavior
+        const zoom = d3.zoom()
+            .scaleExtent([0.1, 4])
+            .on("zoom", handleZoom);
+
+        svg.call(zoom);
+        const g = svg.append("g");
+
+        function handleZoom(event) {
+            g.attr("transform", event.transform);
+        }
+
+        // Create simulation
+        const simulation = d3.forceSimulation(networkData.nodes)
+            .force("link", d3.forceLink(networkData.links).id(d => d.id).distance(80))
+            .force("charge", d3.forceManyBody().strength(-300))
+            .force("center", d3.forceCenter(width / 2, height / 2))
+            .force("collision", d3.forceCollide().radius(d => d.size + 5));
+
+        // Create arrowhead marker
+        svg.append("defs").append("marker")
+            .attr("id", "arrowhead")
+            .attr("viewBox", "0 -5 10 10")
+            .attr("refX", 15)
+            .attr("refY", 0)
+            .attr("markerWidth", 6)
+            .attr("markerHeight", 6)
+            .attr("orient", "auto")
+            .append("path")
+            .attr("d", "M0,-5L10,0L0,5")
+            .attr("class", "arrowhead")
+            .style("fill", "#96FFF5");
+
+        let currentLink, currentNode;
+
+        function updateGraph() {
+            g.selectAll(".node-group").remove();
+            g.selectAll("line").remove();
+            
+            simulation.nodes(networkData.nodes);
+            simulation.force("link").links(networkData.links);
+            
+            currentLink = g.append("g")
+                .selectAll("line")
+                .data(networkData.links)
+                .join("line")
+                .attr("class", d => `link link-${d.type}`)
+                .style("marker-end", "url(#arrowhead)");
+            
+            currentNode = g.append("g")
+                .selectAll(".node-group")
+                .data(networkData.nodes)
+                .join("g")
+                .attr("class", "node-group")
+                .call(d3.drag()
+                    .on("start", dragstarted)
+                    .on("drag", dragged)
+                    .on("end", dragended));
+
+            currentNode.append("circle")
+                .attr("class", d => {
+                    let nodeClass = `node node-${d.type}`;
+                    if (d.componentType) nodeClass += ` node-child`;
+                    if (d.isHub) nodeClass += ` hub`;
+                    return nodeClass;
+                })
+                .attr("r", d => d.size)
+                .style("fill", d => getNodeColor(d))
+                .style("stroke", d => getNodeStrokeColor(d))
+                .on("click", handleNodeClick)
+                .on("dblclick", handleDoubleClick)
+                .on("mouseover", handleMouseOver)
+                .on("mouseout", handleMouseOut);
+
+            currentNode.append("text")
+                .attr("class", "node-label")
+                .attr("dy", d => d.size + 15)
+                .style("font-size", d => d.componentType ? "9px" : "11px")
+                .text(d => d.name.length > 15 ? d.name.substring(0, 15) + "..." : d.name);
+
+            simulation.on("tick", () => {
+                currentLink
+                    .attr("x1", d => d.source.x)
+                    .attr("y1", d => d.source.y)
+                    .attr("x2", d => d.target.x)
+                    .attr("y2", d => d.target.y);
+
+                currentNode.attr("transform", d => `translate(${d.x},${d.y})`);
+            });
+            
+            simulation.alpha(0.3).restart();
+        }
+
+        // Initial graph setup
+        updateGraph();
+
+        // Enhanced Natural Language Processing for Queries
+        function processNaturalLanguageQuery(query) {
+            const lowerQuery = query.toLowerCase();
+            
+            const queryPatterns = [
+                {
+                    patterns: ['outage', 'down', 'affected', 'customers affected'],
+                    response: `🔍 OUTAGE ANALYSIS RESULTS:
+• Current active outages: 5 critical incidents
+• Total customers affected: 4,991 customers
+• Primary cause: Construction damage to fiber trunks
+• Remote resolution attempted: 3 of 5 cases
+• Remote resolution success: 1 of 3 attempts (33%)
+• Estimated resolution: 2-4 hours for major incidents`,
+                    actions: [
+                        { text: "Show remote resolution opportunities?", action: "show-remote-resolution", handoff: "louie" },
+                        { text: "Analyze churn risk for affected customers?", action: "analyze-churn", handoff: "sophie" }
+                    ]
+                },
+                {
+                    patterns: ['churn', 'nps', 'sentiment', 'customer satisfaction'],
+                    response: `📊 PREDICTIVE CHURN ANALYSIS:
+• Current average NPS: 4.2 (down from 6.2 baseline)
+• Sentiment correlation: -0.6 during outages
+• Predicted churn increase: +21% for affected customers
+• Revenue at risk: $284.5K across all segments
+• High-value customer retention alerts: 12 active cases
+• Correlation: 4.2hr outage → -1.8 NPS → +21% churn risk`,
+                    actions: [
+                        { text: "Deploy proactive retention campaign?", action: "retention-campaign", handoff: "sophie" },
+                        { text: "Show predictive analytics dashboard?", action: "show-analytics", handoff: null }
+                    ]
+                },
+                {
+                    patterns: ['remote', 'truck roll', 'prevention', 'troubleshooting', 'louie'],
+                    response: `🎓 REMOTE RESOLUTION INTELLIGENCE:
+• Current truck roll prevention rate: 67%
+• Today's remote fixes: Power cycle (2), Config reset (1), OTDR test (3)
+• Failed remote attempts: Oakland OLT reboot, SF trunk diagnostics
+• Success patterns: CPE issues (89%), Config problems (76%), Power cycles (64%)
+• Training opportunities: 23 NOC staff need remote diagnostic certification
+• Potential savings: $45K monthly in reduced truck rolls`,
+                    actions: [
+                        { text: "Start remote troubleshooting training?", action: "start-training", handoff: "louie" },
+                        { text: "Attempt remote fix on Oakland OLT?", action: "remote-fix", equipment: "EQ-OAKLCA03-OLT-02", handoff: "louie" }
+                    ]
+                },
+                {
+                    patterns: ['workflow', 'handoff', 'chain', 'agent'],
+                    response: `🤖 AI WORKFLOW ORCHESTRATION:
+• Active workflow chain: Charlie → Parker → Dana → Sophie → Louie
+• Current step: ${workflowChain[currentWorkflowStep]} (Step ${currentWorkflowStep + 1}/5)
+• Completed handoffs: ${currentWorkflowStep} of 4
+• Workflow efficiency: 94% completion rate
+• Average resolution time: 2.3 hours with full chain
+• Agent specialties: Diagnostics → Prioritization → Dispatch → Customer → Training`,
+                    actions: [
+                        { text: "Advance to next workflow step?", action: "advance-workflow", handoff: workflowChain[currentWorkflowStep + 1] || 'complete' },
+                        { text: "Show workflow performance metrics?", action: "workflow-metrics", handoff: null }
+                    ]
+                }
+            ];
+            
+            for (const pattern of queryPatterns) {
+                if (pattern.patterns.some(p => lowerQuery.includes(p))) {
+                    return pattern;
+                }
+            }
+            
+            return {
+                response: `🔍 ENHANCED QUERY PROCESSING:
+I understand you're asking about "${query}". The enhanced GigaPulse system now includes:
+
+• Deep End Louie's remote troubleshooting intelligence
+• Predictive churn analytics with correlation modeling
+• Time series sentiment and outage pattern analysis
+• Seamless AI agent workflow chains
+
+Current system status:
+• 5 active incidents, 67% remote resolution rate
+• $284.5K revenue at risk from sentiment correlation
+• AI workflow chain: Step ${currentWorkflowStep + 1}/5 active`,
+                actions: [
+                    { text: "Show analytics dashboard?", action: "show-analytics", handoff: null },
+                    { text: "Get Louie's troubleshooting tips?", action: "louie-tips", handoff: "louie" },
+                    { text: "Start workflow chain?", action: "start-workflow", handoff: "charlie" }
+                ]
+            };
+        }
+
+        // Enhanced Node interaction handlers with Louie's troubleshooting intelligence
+        function handleNodeClick(event, d) {
+            if (currentTooltip) {
+                currentTooltip.remove();
+                currentTooltip = null;
+            }
+            
+            console.log("Node clicked:", d);
+            
+            // Check for remote resolution opportunities
+            if (d.remoteResolutionAttempted !== undefined) {
+                if (!d.remoteResolutionSuccess && d.remoteRebootCapable) {
+                    triggerLouieTroubleshootingTip(d);
+                }
+            }
+            
+            if (d.type === 'outage') {
+                if (d.priority === 'critical') {
+                    triggerWorkflowChain('charlie', `outage-analysis-${d.id}`, d);
+                }
+            } else if (d.type === 'equipment' && d.status.includes('Failed')) {
+                triggerLouieTroubleshootingTip(d);
+            } else if (d.type === 'customer') {
+                triggerWorkflowChain('sophie', `customer-sentiment-${d.id}`, d);
+            }
+
+            highlightConnections(d);
+        }
+
+        // Louie's troubleshooting intelligence system
+        function triggerLouieTroubleshootingTip(nodeData) {
+            const tips = generateRemoteResolutionTips(nodeData);
+            
+            setTimeout(() => {
+                addAIMessage('Deep End Louie', tips.message, null, tips.actions);
+                setActiveAgent('louie');
+                updateWorkflowChainIndicator('louie');
+            }, 1000);
+        }
+
+        function generateRemoteResolutionTips(nodeData) {
+            const tipDatabase = {
+                'equipment': {
+                    'OLT': {
+                        message: `🎓 REMOTE TROUBLESHOOTING ANALYSIS:
+• Equipment: ${nodeData.name}
+• Status: ${nodeData.status}
+• Remote capabilities: Power cycle, Config reset, Port diagnostics
+
+SUGGESTED RESOLUTION PATH:
+1. Attempt graceful restart via SNMP (Success rate: 64%)
+2. If failed, try power cycle via smart PDU (Success rate: 78%)
+3. Check port-specific diagnostics for PON failures
+4. Verify upstream connectivity before dispatching crew
+
+💡 PRO TIP: 87% of OLT failures are resolved with power cycle + config verification. This could save a 47-minute truck roll!`,
+                        actions: [
+                            { text: "Attempt remote power cycle?", action: "remote-power-cycle", equipment: nodeData.id, handoff: null },
+                            { text: "Run diagnostic sequence?", action: "diagnostic-sequence", equipment: nodeData.id, handoff: null },
+                            { text: "Train NOC on this scenario?", action: "training-scenario", scenario: "olt-failure", handoff: null }
+                        ]
+                    },
+                    'default': {
+                        message: `🎓 REMOTE RESOLUTION OPPORTUNITY:
+• Equipment type: ${nodeData.type}
+• Current status: ${nodeData.status}
+• Remote management: ${nodeData.remoteRebootCapable ? 'Available' : 'Limited'}
+
+Before dispatching field crew, consider:
+1. Remote diagnostics via management interface
+2. Customer premise equipment power cycle
+3. Signal quality tests via OTDR (if fiber)
+4. Configuration verification and reset
+
+Success rate for remote resolution: 67% industry average`,
+                        actions: [
+                            { text: "Attempt remote diagnostics?", action: "remote-diagnostics", handoff: null },
+                            { text: "Show similar cases?", action: "show-examples", handoff: null }
+                        ]
+                    }
+                },
+                'outage': {
+                    message: `🎓 OUTAGE REMOTE RESOLUTION ANALYSIS:
+• Affected customers: ${nodeData.customers}
+• Duration: ${nodeData.mttr}
+• Remote attempts: ${nodeData.remoteResolutionAttempted ? 'Yes' : 'No'}
+
+TRUCK ROLL PREVENTION CHECKLIST:
+✅ Customer CPE power cycle instructions (Success: 34%)
+✅ Network element remote reboot (Success: 23%)  
+✅ Circuit path verification via OSS (Success: 18%)
+✅ Alternative routing activation (Success: 12%)
+
+💰 Potential savings: $2,400 per truck roll avoided`,
+                    actions: [
+                        { text: "Send CPE reset instructions to customers?", action: "cpe-reset-instructions", handoff: "sophie" },
+                        { text: "Attempt network element reboot?", action: "network-reboot", handoff: null }
+                    ]
+                }
+            };
+
+            const equipmentType = nodeData.name.includes('OLT') ? 'OLT' : 'default';
+            const categoryTips = tipDatabase[nodeData.type] || tipDatabase['equipment'];
+            
+            return categoryTips[equipmentType] || categoryTips['default'] || categoryTips;
+        }
+
+        // Enhanced workflow chain management
+        function triggerWorkflowChain(startAgent, workflowType, contextData) {
+            const agentIndex = workflowChain.indexOf(startAgent);
+            if (agentIndex !== -1) {
+                currentWorkflowStep = agentIndex;
+                updateWorkflowChainIndicator(startAgent);
+                setActiveAgent(startAgent);
+                
+                setTimeout(() => {
+                    const response = getAgentResponse(startAgent, workflowType, contextData);
+                    addAIMessage(agents[startAgent].name, response.message, response.probability, response.actions);
+                }, 1000 + Math.random() * 2000);
+            }
+        }
+
+        function advanceWorkflowChain() {
+            if (currentWorkflowStep < workflowChain.length - 1) {
+                currentWorkflowStep++;
+                const nextAgent = workflowChain[currentWorkflowStep];
+                updateWorkflowChainIndicator(nextAgent);
+                setActiveAgent(nextAgent);
+                
+                // Visual indication of workflow advancement
+                document.querySelectorAll('.ai-agent').forEach(el => el.classList.remove('workflow-active'));
+                const nextAgentEl = document.querySelector(`[data-agent="${nextAgent}"]`);
+                if (nextAgentEl) {
+                    nextAgentEl.classList.add('workflow-active');
+                }
+                
+                showNotification(`Workflow advanced to ${agents[nextAgent]?.name}`);
+                
+                setTimeout(() => {
+                    const response = getHandoffResponse(nextAgent, 'workflow-advance');
+                    addAIMessage(agents[nextAgent].name, response.message, null, response.actions);
+                }, 1500);
+            } else {
+                showNotification('Workflow chain completed');
+                updateWorkflowChainIndicator('complete');
+            }
+        }
+
+        function updateWorkflowChainIndicator(currentAgent) {
+            const chainSteps = document.querySelectorAll('.chain-step');
+            const currentIndex = workflowChain.indexOf(currentAgent);
+            
+            chainSteps.forEach((step, index) => {
+                step.classList.remove('active', 'completed');
+                if (index < currentIndex) {
+                    step.classList.add('completed');
+                } else if (index === currentIndex) {
+                    step.classList.add('active');
+                }
+            });
+        }
+
+        // Enhanced AI Agent Management with realistic Frontier workflow
+        let activeAgent = 'charlie';
+        const agents = {
+            charlie: {
+                name: "Circuit Charlie",
+                personality: "technical_precision",
+                specialties: ["infrastructure_analysis", "probability_calculation", "root_cause_diagnosis"],
+                responses: [
+                    {
+                        message: `🔧 DIAGNOSTIC ANALYSIS COMPLETE:
+• 89% confidence: Fiber trunk severed by construction equipment at SP-2847
+• FBR-CA-SNFC-TRUNK-A01 completely cut - OTDR shows 15.7dB loss @ 2.1mi
+• Physical damage confirmed: CalTrans construction crew involved
+• Impact: 2,847 customers (residential + business) via SNFCCA01 CLLI
+• Remote resolution: Impossible - requires new fiber splice and possible circuit replacement`,
+                        probability: "Field Repair Required: 94%",
+                        actions: [
+                            { text: "Handoff to Priority Parker for escalation?", action: "handoff", handoff: "parker" },
+                            { text: "Dispatch field crew immediately?", action: "dispatch-emergency", location: "SP-2847", handoff: "dana" }
+                        ]
+                    },
+                    {
+                        message: `🔧 OAKLAND OLT FAILURE ANALYSIS:
+• Equipment: Nokia 7360 ISAM FX-8 at OAKLCA03
+• Fault signatures: Power supply PSU-01 failed, PON ports 3&4 offline
+• Customer impact: 892 residential customers, no business services
+• Hardware replacement required - unit beyond repair
+• Oakland warehouse has replacement Nokia 7360 in stock`,
+                        probability: "Equipment Replacement Required: 95%",
+                        actions: [
+                            { text: "Handoff to Dana for M3 work order?", action: "handoff", handoff: "dana" },
+                            { text: "Check warehouse inventory first?", action: "check-inventory", warehouse: "Oakland", handoff: null }
+                        ]
+                    }
+                ]
+            },
+            parker: {
+                name: "Priority Parker",
+                personality: "business_focused", 
+                specialties: ["ticket_consolidation", "priority_assessment", "resource_allocation"],
+                responses: [
+                    {
+                        message: `📋 MULTI-INCIDENT PRIORITY ASSESSMENT:
+• **P0 EMERGENCY**: Metro Bank datacenter circuit (1 customer, $50K/hr SLA breach)
+• **P1 CRITICAL**: CA Fiber trunk + Oakland OLT (3,739 customers, 2.1hrs to SLA breach)  
+• **P2 WARNING**: Vegas latency spike (445 customers, performance impact only)
+• **P3 SCHEDULED**: Portland maintenance (0 customer impact, planned window)
+
+**Resource Allocation Decision**:
+• Assign senior crew to P0 Metro Bank (executive escalation triggered)  
+• Parallel P1 response: Dana coordinating SF fiber + Oakland OLT repairs
+• P2 Vegas: Remote resolution successful via config reset
+• P3 Portland: Proceeding as scheduled`,
+                        actions: [
+                            { text: "Handoff P0 + P1 incidents to Dana?", action: "handoff", handoff: "dana" },
+                            { text: "Escalate P0 to VP Operations immediately?", action: "executive-escalation", priority: "P0", handoff: "sophie" }
+                        ]
+                    }
+                ]
+            },
+            dana: {
+                name: "Dispatch Dana",
+                personality: "action_oriented",
+                specialties: ["field_dispatch", "work_orders", "m3_integration", "parts_management"],
+                responses: [
+                    {
+                        message: `🚛 INITIAL DISPATCH COORDINATION:
+• **P0 Metro Bank**: CREW-CA-ENT-001 (enterprise specialists) - ETA 15min
+• **P1 SF Fiber**: CREW-CA-NOR-012 dispatched to SP-2847 - ETA 43min  
+• **P1 Oakland OLT**: CREW-CA-BAY-015 dispatched for assessment - ETA 30min
+• **Field Assessment**: All crews instructed to confirm equipment status before work orders
+
+**Next Step**: Monitor crew progress and await field confirmation before creating M3 work orders`,
+                        actions: [
+                            { text: "Monitor field crew status updates?", action: "monitor-field-crews", crews: "3", handoff: null },
+                            { text: "Track GPS locations live?", action: "gps-tracking", focus: "all-crews", handoff: null }
+                        ]
+                    },
+                    {
+                        message: `📍 FIELD CREW STATUS UPDATES:
+• **CREW-CA-NOR-012** (SF): On-site at SP-2847, assessing fiber damage
+• **CREW-CA-BAY-015** (Oakland): Arrived at OAKLCA03, running diagnostics on OLT
+• **CREW-CA-ENT-001** (Metro Bank): Implementing temporary bypass, no equipment replacement needed
+
+**Awaiting Confirmation**: Field crews performing detailed assessments to determine exact repair requirements`,
+                        actions: [
+                            { text: "Continue monitoring for field confirmations?", action: "await-confirmations", timeout: "10min", handoff: null },
+                            { text: "Request immediate status updates?", action: "request-status", urgency: "immediate", handoff: null }
+                        ]
+                    },
+                    {
+                        message: `📋 FIELD CONFIRMATION RECEIVED:
+• **SF Fiber Crew**: "Fiber trunk completely severed, need 200ft replacement cable and splice kit"
+• **Oakland OLT Crew**: "Power supply failed, Nokia 7360 unit needs full replacement, not repairable"
+• **Metro Bank**: "Bypass successful, no work order needed"
+
+**M3 Work Orders Ready for Creation**: Field confirmations complete, proceeding with equipment orders`,
+                        actions: [
+                            { text: "Create M3 work orders based on field confirmation?", action: "create-confirmed-workorders", confirmations: "received", handoff: null },
+                            { text: "Send warehouse requests for confirmed parts?", action: "warehouse-requests", parts: "fiber-cable+nokia-olt", handoff: null },
+                            { text: "Update customer ETAs based on confirmed repairs?", action: "update-etas-confirmed", handoff: "sophie" }
+                        ]
+                    },
+                    {
+                        message: `📦 M3 WORK ORDERS CREATED FROM FIELD CONFIRMATIONS:
+• **WO-78451-FIBER**: 200ft armored fiber cable + splice kit (confirmed by field crew)
+• **WO-78452-OLT-REPL**: Nokia 7360 ISAM FX-8 replacement (PSU failure confirmed)
+• **Parts Status**: Oakland warehouse has Nokia unit in stock, fiber cable being expedited
+• **Installation Timeline**: Oakland 45min, SF Fiber 90min based on field assessment
+
+**Coordination Complete**: Work orders match actual field requirements, no wasted resources`,
+                        actions: [
+                            { text: "Dispatch warehouse pickup crews?", action: "warehouse-dispatch", items: "confirmed-parts", handoff: null },
+                            { text: "Coordinate installation timing with field teams?", action: "coordinate-installation", teams: "2", handoff: null },
+                            { text: "Handoff to Sophie for customer updates?", action: "handoff", handoff: "sophie" }
+                        ]
+                    }
+                ]
+            },
+            sophie: {
+                name: "Sentiment Sophie", 
+                personality: "customer_focused",
+                specialties: ["customer_communication", "sentiment_analysis", "churn_prevention", "proactive_messaging"],
+                responses: [
+                    {
+                        message: `💬 PRIORITY-BASED CUSTOMER COMMUNICATION STRATEGY:
+• **P0 Metro Bank**: Direct C-level executive call scheduled (VIP white-glove treatment)
+• **P1 SF Residential** (2,847 customers): Mass SMS - "Crews on site, restoration in 1-2 hours"  
+• **P1 Oakland** (892 customers): Targeted SMS - "Equipment replacement in progress, ~1 hour ETA"
+• **P2 Vegas**: Automated notification - "Performance issue resolved via remote fix"
+
+**Deployment Results**:
+• P0: Executive relationship preserved, SLA waiver negotiated
+• P1: 91% call deflection achieved, sentiment improved -0.6 to -0.2  
+• P2: Proactive resolution notification increased NPS by +0.3`,
+                        actions: [
+                            { text: "Monitor sentiment across all priority levels?", action: "multi-priority-sentiment", levels: "P0-P2", handoff: null },
+                            { text: "Prepare completion notifications by priority?", action: "prep-completion-comms", priority: "staged", handoff: null },
+                            { text: "Handoff to Louie for agent coordination?", action: "handoff", handoff: "louie" }
+                        ]
+                    }
+                ]
+            },
+            louie: {
+                name: "Deep End Louie",
+                personality: "educational", 
+                specialties: ["training", "agent_coaching", "knowledge_transfer", "continuous_improvement"],
+                responses: [
+                    {
+                        message: `🎓 AGENT BRIEFING & TRAINING UPDATE:
+• All contact center agents updated via internal chat: "Fiber repair in progress, 75-90min ETA, crews on site, proactive SMS sent"
+• Agent script updated in real-time: "We're aware of your area's outage. Our field crews are already working on the damaged fiber line and expect to have service restored within the next 1-2 hours."
+• Training moment: This incident demonstrates perfect AI orchestration workflow
+• Knowledge base updated: Construction damage response time reduced by 40% vs previous incidents`,
+                        actions: [
+                            { text: "Send completion notification when resolved?", action: "completion-notification", scope: "all-agents", handoff: null },
+                            { text: "Document lessons learned?", action: "document-lessons", incident: "INC-2024-78451", handoff: null },
+                            { text: "Analyze workflow efficiency?", action: "workflow-analysis", completion: "when-resolved", handoff: null }
+                        ]
+                    },
+                    {
+                        message: `✅ SERVICE RESTORATION COMPLETE - LEARNING ANALYSIS:
+• Total resolution time: 78 minutes (under 90min target)
+• Customer sentiment: Recovered to -0.1 (near baseline)
+• Agent performance: 95% of calls handled with updated scripts, no escalations
+• Workflow success: All 5 AI agents coordinated seamlessly
+• Key learning: Proactive customer communication reduced negative calls by 89%
+• Efficiency gain: 40% faster resolution vs similar historical incidents`,
+                        actions: [
+                            { text: "Generate incident report?", action: "generate-report", type: "success-story", handoff: null },
+                            { text: "Update training materials?", action: "update-training", focus: "proactive-communications", handoff: null },
+                            { text: "Schedule team debrief?", action: "schedule-debrief", participants: "cross-functional", handoff: null }
+                        ]
+                    }
+                ]
+            }
+        };
+
+        function getAgentResponse(agentId, workflowType, contextData) {
+            const agent = agents[agentId];
+            return agent.responses[0];
+        }
+
+        function getHandoffResponse(agentId, previousAction) {
+            const responses = {
+                parker: {
+                    message: "Received diagnostic analysis from Charlie. Prioritizing based on customer impact and SLA requirements.",
+                    actions: [
+                        { text: "Continue to Dispatch Dana?", action: "handoff", handoff: "dana" },
+                        { text: "Escalate priority level?", action: "escalate-priority", handoff: null }
+                    ]
+                },
+                dana: {
+                    message: "Priority assessment received. Dispatching field resources and coordinating equipment delivery.",
+                    actions: [
+                        { text: "Continue to Sentiment Sophie?", action: "handoff", handoff: "sophie" },
+                        { text: "Request additional crews?", action: "request-crews", handoff: null }
+                    ]
+                },
+                sophie: {
+                    message: "Field dispatch confirmed. Initiating customer communication and sentiment monitoring protocols.",
+                    actions: [
+                        { text: "Continue to Deep End Louie?", action: "handoff", handoff: "louie" },
+                        { text: "Activate retention protocols?", action: "activate-retention", handoff: null }
+                    ]
+                },
+                louie: {
+                    message: "Customer communications active. Analyzing this incident for learning opportunities and process improvement.",
+                    actions: [
+                        { text: "Complete workflow?", action: "complete-workflow", handoff: null },
+                        { text: "Start training session?", action: "start-training", handoff: null }
+                    ]
+                }
+            };
+            
+            return responses[agentId] || { message: "Workflow step completed.", actions: [] };
+        }
+
+        // Enhanced tooltip system with Louie's troubleshooting tips
+        function handleMouseOver(event, d) {
+            if (currentTooltip) {
+                currentTooltip.remove();
+            }
+
+            currentTooltip = d3.select("body").append("div")
+                .attr("class", "tooltip")
+                .style("opacity", 0)
+                .style("pointer-events", "auto");
+
+            let tooltipContent = `<strong>${d.name}</strong><br/>Type: ${d.type.charAt(0).toUpperCase() + d.type.slice(1)}`;
+            
+            if (d.componentType) {
+                tooltipContent += `<br/>Component: ${d.componentType}`;
+                if (d.details) tooltipContent += `<br/>Details: ${d.details}`;
+            } else {
+                if (d.customers) tooltipContent += `<br/>Customers Affected: ${d.customers.toLocaleString()}`;
+                if (d.status) tooltipContent += `<br/>Status: <span style="color: ${getStatusColor(d.status)}">${d.status}</span>`;
+                if (d.mttr) tooltipContent += `<br/>MTTR Estimate: ${d.mttr}`;
+                if (d.churnRisk) tooltipContent += `<br/>Churn Risk: <span style="color: ${getChurnRiskColor(d.churnRisk)}">${d.churnRisk}</span>`;
+                if (d.revenueAtRisk) tooltipContent += `<br/>Revenue at Risk: ${d.revenueAtRisk}`;
+                
+                // Add Louie's troubleshooting tips
+                if (d.remoteResolutionAttempted !== undefined) {
+                    tooltipContent += `<br/>Remote Resolution: ${d.remoteResolutionAttempted ? (d.remoteResolutionSuccess ? 'Successful' : 'Failed') : 'Not Attempted'}`;
+                }
+                
+                if (d.remoteRebootCapable && !d.remoteResolutionSuccess) {
+                    tooltipContent += `<br/><span style="color: #FFA500;">💡 Louie's Tip: Remote reboot available - try before truck roll!</span>`;
+                    currentTooltip.classed("tooltip-troubleshoot", true);
+                }
+                
+                if (d.truckRollPrevented) {
+                    tooltipContent += `<br/><span style="color: #00FF88;">✅ Truck Roll Prevented: ${d.preventionReason}</span>`;
+                }
+                
+                if (['clli', 'infrastructure', 'equipment', 'outage', 'customer'].includes(d.type)) {
+                    tooltipContent += `<br/><em style="color: #96FFF5;">Double-click to ${expandedNodes.has(d.id) ? 'collapse' : 'expand'}</em>`;
+                }
+            }
+
+            currentTooltip.transition()
+                .duration(200)
+                .style("opacity", .95);
+            currentTooltip.html(tooltipContent)
+                .style("left", (event.pageX + 15) + "px")
+                .style("top", (event.pageY - 10) + "px");
+        }
+
+        function handleMouseOut(event, d) {
+            // Tooltip persists until next interaction
+        }
+
+        // Time series chart creation
+        function createTimeSeriesChart(containerId, data, color = "#96FFF5") {
+            const container = d3.select(`#${containerId}`);
+            container.selectAll("*").remove();
+            
+            const width = container.node().getBoundingClientRect().width;
+            const height = 60;
+            
+            const svg = container.append("svg")
+                .attr("width", width)
+                .attr("height", height);
+            
+            const xScale = d3.scaleLinear()
+                .domain([0, data.length - 1])
+                .range([5, width - 5]);
+            
+            const yScale = d3.scaleLinear()
+                .domain(d3.extent(data))
+                .range([height - 10, 10]);
+            
+            const line = d3.line()
+                .x((d, i) => xScale(i))
+                .y(d => yScale(d))
+                .curve(d3.curveMonotoneX);
+            
+            svg.append("path")
+                .datum(data)
+                .attr("fill", "none")
+                .attr("stroke", color)
+                .attr("stroke-width", 2)
+                .attr("d", line);
+            
+            svg.selectAll(".dot")
+                .data(data)
+                .enter().append("circle")
+                .attr("class", "dot")
+                .attr("cx", (d, i) => xScale(i))
+                .attr("cy", d => yScale(d))
+                .attr("r", 3)
+                .attr("fill", color);
+        }
+
+        // Analytics dashboard creation
+        function createAnalyticsDashboard() {
+            // Customer Sentiment Trend
+            createTimeSeriesChart("sentiment-dashboard-chart", timeSeriesData.customerSentiment, "#FF0037");
+            
+            // Outage Pattern Analysis  
+            createTimeSeriesChart("outage-dashboard-chart", timeSeriesData.outageCount, "#FFA500");
+            
+            // Churn Risk Correlation
+            createTimeSeriesChart("churn-dashboard-chart", timeSeriesData.churnRisk, "#FF0037");
+            
+            // Remote Resolution Success
+            createTimeSeriesChart("resolution-dashboard-chart", timeSeriesData.truckRollPrevention, "#00FF88");
+        }
+
+        // Enhanced message handling
+        function addAIMessage(sender, message, probability = null, actions = null) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message ai';
+            
+            let content = `<div class="sender">${sender}</div>${message}`;
+            
+            if (probability) {
+                content += `<div class="probability-indicator">${probability}</div>`;
+            }
+            
+            if (actions && actions.length > 0) {
+                content += `<div class="message-actions">`;
+                actions.forEach(action => {
+                    let btnClass = 'action-btn';
+                    if (action.text.includes('?')) btnClass += ' approve';
+                    if (action.handoff) btnClass += ' handoff';
+                    content += `<button class="${btnClass}" data-action="${action.action}" data-handoff="${action.handoff || ''}">${action.text}</button>`;
+                });
+                content += `</div>`;
+            }
+            
+            messageDiv.innerHTML = content;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            messageDiv.querySelectorAll('.action-btn').forEach(btn => {
+                btn.addEventListener('click', handleActionClick);
+            });
+        }
+
+        function handleActionClick(event) {
+            const action = event.target.dataset.action;
+            const handoff = event.target.dataset.handoff;
+            
+            addChatMessage('User', `Approved: ${event.target.textContent}`);
+            
+            if (action === 'handoff' && handoff) {
+                advanceWorkflowChain();
+            } else if (action === 'show-analytics') {
+                toggleAnalyticsDashboard();
+            } else if (action === 'remote-power-cycle') {
+                simulateRemotePowerCycle();
+            } else {
+                processAIAction(action, { handoff });
+            }
+            
+            event.target.disabled = true;
+            event.target.textContent = '✓ Approved';
+            event.target.style.opacity = '0.6';
+        }
+
+        function simulateRemotePowerCycle() {
+            showNotification('Initiating remote power cycle...');
+            
+            const chatMessages = document.getElementById('chatMessages');
+            const workflowDiv = document.createElement('div');
+            workflowDiv.className = 'workflow-indicator';
+            workflowDiv.innerHTML = `<div class="loading"></div>Remote power cycle in progress...`;
+            chatMessages.appendChild(workflowDiv);
+            
+            setTimeout(() => {
+                const success = Math.random() > 0.4; // 60% success rate
+                workflowDiv.innerHTML = success ? 
+                    '✓ Remote power cycle successful! Equipment restored.' : 
+                    '✗ Remote power cycle failed. Field dispatch required.';
+                
+                if (success) {
+                    setTimeout(() => {
+                        addAIMessage('Deep End Louie', `🎉 Excellent! Remote power cycle successful. This saved a 47-minute truck roll and $2,400 in dispatch costs. Great troubleshooting decision!
+                        
+<div class="remote-resolution-tip">Training Opportunity: This case demonstrates why power cycles should be first troubleshooting step for equipment failures.</div>`, null, [
+                            { text: "Update NOC training materials?", action: "update-training", handoff: null },
+                            { text: "Log successful remote resolution?", action: "log-success", handoff: null }
+                        ]);
+                    }, 1500);
+                }
+            }, 3000);
+        }
+
+        function toggleAnalyticsDashboard() {
+            const dashboard = document.getElementById('analyticsDashboard');
+            const isVisible = dashboard.classList.contains('visible');
+            
+            if (isVisible) {
+                dashboard.classList.remove('visible');
+            } else {
+                dashboard.classList.add('visible');
+                createAnalyticsDashboard();
+            }
+        }
+
+        // Utility functions
+        function getNodeColor(d) {
+            // Status-based coloring for alarm triage - prioritize status over device type
+            if (d.status) {
+                switch(d.status.toLowerCase()) {
+                    case 'failed':
+                    case 'critical failure':
+                    case 'severed':
+                    case 'physically severed':
+                    case 'remote reboot failed':
+                        return '#FF0037'; // Critical Red
+                    
+                    case 'degraded':
+                    case 'degraded service':
+                    case 'simplex':
+                    case 'warning':
+                    case 'alert':
+                    case 'dispatch out':
+                    case 'investigating':
+                    case 'power supply fault':
+                    case 'remote reboot attempted':
+                        return '#FFA500'; // Warning Orange
+                    
+                    case 'operational':
+                    case 'resolved':
+                    case 'closed':
+                    case 'available':
+                    case 'backup active':
+                    case 'generator backup':
+                    case 'config reset applied':
+                        return '#00FF88'; // Operational Green
+                    
+                    case 'en route':
+                    case 'generator active':
+                    case 'backup power active':
+                    case 'performance issues':
+                    case 'performance degraded':
+                        return '#96FFF5'; // Info Blue
+                    
+                    default:
+                        return '#96FFF5'; // Default Blue
+                }
+            }
+            
+            // For network components, use status if available
+            if (d.componentType) {
+                // Check if details contain status indicators for network components
+                if (d.details) {
+                    if (d.details.includes('FAILED') || d.details.includes('OFFLINE') || d.details.includes('SEVERED') || d.details.includes('FAULT')) {
+                        return '#FF0037'; // Critical Red
+                    } else if (d.details.includes('DEGRADED') || d.details.includes('WARNING') || d.details.includes('DOWN')) {
+                        return '#FFA500'; // Warning Orange
+                    }
+                }
+                
+                // Customer sentiment-based coloring for individual customers
+                if (d.componentType === 'individual-customer') {
+                    return getCustomerSentimentColor(d.details);
+                }
+                
+                // Default operational for network components without specific status
+                return '#00FF88'; // Operational Green
+            }
+            
+            // Legacy main node colors (will be overridden by status if present)
+            switch(d.type) {
+                case 'outage': return '#FF0037'; // Always critical
+                case 'customer': return d.churnRisk === 'Critical' ? '#FF0037' : d.churnRisk === 'High' ? '#FFA500' : '#4169E1';
+                case 'business': return d.churnRisk === 'Critical' ? '#FF0037' : '#191970';
+                case 'internal': return '#00FF88'; // Usually operational
+                case 'agent': return '#00FF88'; // Usually operational
+                case 'supervisor': return '#00FF88'; // Usually operational
+                case 'noc': return '#00FF88'; // Usually operational
+                case 'engineer': return '#00FF88'; // Usually operational
+                case 'crew': return d.status === 'En Route' ? '#96FFF5' : '#00FF88';
+                case 'infrastructure': return d.priority === 'critical' ? '#FF0037' : d.priority === 'warning' ? '#FFA500' : '#00FF88';
+                case 'equipment': return d.priority === 'critical' ? '#FF0037' : '#00FF88';
+                case 'clli': return d.status && d.status.includes('Critical') ? '#FF0037' : d.status && d.status.includes('Backup') ? '#FFA500' : '#FFD700';
+                case 'external': return '#96FFF5'; // Info/neutral
+                default: return '#96FFF5'; // Default info blue
+            }
+        }
+
+        function getCustomerSentimentColor(details) {
+            const npsMatch = details.match(/NPS:\s*(\d+)/);
+            if (npsMatch) {
+                const nps = parseInt(npsMatch[1]);
+                if (nps <= 3) return '#FF4444';
+                if (nps <= 6) return '#FFA500';
+                return '#00FF88';
+            }
+            return '#4169E1';
+        }
+
+        function getNodeStrokeColor(d) {
+            return getNodeColor(d);
+        }
+
+        function getStatusColor(status) {
+            const statusColors = {
+                'Failed': '#FF0037',
+                'Severed': '#FF0037',
+                'Remote Reboot Failed': '#FF0037',
+                'Critical Failure': '#FF0037',
+                'Dispatch Out': '#FFA500',
+                'Remote Reboot Attempted': '#FFA500',
+                'Config Reset Applied': '#96FFF5',
+                'Generator Active': '#96FFF5',
+                'Resolved': '#00FF88',
+                'Operational': '#00FF88'
+            };
+            return statusColors[status] || '#FFFFFF';
+        }
+
+        function getChurnRiskColor(churnRisk) {
+            const riskColors = {
+                'Low': '#00FF88',
+                'Medium': '#FFA500', 
+                'High': '#FF0037',
+                'Critical': '#FF0037'
+            };
+            return riskColors[churnRisk] || '#FFFFFF';
+        }
+
+        // Event handlers and initialization
+        function setActiveAgent(agentId) {
+            activeAgent = agentId;
+            document.querySelectorAll('.ai-agent').forEach(el => el.classList.remove('active'));
+            const agentElement = document.querySelector(`[data-agent="${agentId}"]`);
+            if (agentElement) {
+                agentElement.classList.add('active');
+            }
+            document.querySelector('.chat-title').textContent = agents[agentId]?.name || 'GigaPulse Enhanced AI';
+        }
+
+        function addChatMessage(sender, message) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender.includes('User') ? 'user' : 'ai'}`;
+            messageDiv.innerHTML = `
+                <div class="sender">${sender}</div>
+                ${message}
+            `;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 4000);
+        }
+
+        function processAIAction(action, params) {
+            showNotification(`Action initiated: ${action.replace('-', ' ')}`);
+            
+            const chatMessages = document.getElementById('chatMessages');
+            const workflowDiv = document.createElement('div');
+            workflowDiv.className = 'workflow-indicator';
+            workflowDiv.innerHTML = `<div class="loading"></div>Processing ${action}...`;
+            chatMessages.appendChild(workflowDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            // Enhanced workflow simulation with realistic Frontier operations
+            if (action === 'monitor-field-crews') {
+                // Field crew monitoring with live status updates
+                setTimeout(() => {
+                    workflowDiv.innerHTML = `👥 Field Crew Monitoring Activated`;
+                    
+                    setTimeout(() => {
+                        addAIMessage('Dispatch Dana', `📍 CREW DEPLOYMENT STATUS:
+• CREW-CA-NOR-012: Dispatched to SP-2847, ETA 38 minutes
+• CREW-CA-BAY-015: En route to OAKLCA03, ETA 28 minutes  
+• CREW-CA-ENT-001: Arrived at Metro Bank, beginning assessment
+• GPS tracking active, optimal routes confirmed`, null, [
+                            { text: "Continue monitoring for site arrivals?", action: "monitor-arrivals", crews: "3", handoff: null }
+                        ]);
+                    }, 2000);
+                    
+                    setTimeout(() => {
+                        addAIMessage('Dispatch Dana', `🔧 CREWS ON-SITE - ASSESSMENT PHASE:
+• SF Crew: Arrived at SP-2847, conducting fiber damage assessment
+• Oakland Crew: On-site at OAKLCA03, running OLT diagnostics
+• Metro Bank: Bypass implemented successfully, no equipment needed
+• Awaiting field confirmation of repair requirements`, null, [
+                            { text: "Wait for field assessment results?", action: "await-field-assessment", timeout: "5min", handoff: null }
+                        ]);
+                    }, 8000);
+                }, 1000);
+                
+            } else if (action === 'await-field-assessment') {
+                // Field assessment confirmation workflow
+                setTimeout(() => {
+                    workflowDiv.innerHTML = `⏳ Awaiting Field Assessment Confirmation`;
+                    
+                    setTimeout(() => {
+                        addAIMessage('Dispatch Dana', `📞 FIELD CREW REPORTS INCOMING:
+• SF Crew Radio: "Fiber completely severed at splice point, 200ft section needs replacement"
+• Oakland Crew Report: "OLT power supply PSU-01 failed, unit beyond repair - full replacement required"  
+• Metro Bank: "Temporary bypass successful, permanent repair can wait for maintenance window"
+• Field confirmation complete - ready to create accurate work orders`, null, [
+                            { text: "Create M3 work orders based on field confirmation?", action: "create-confirmed-workorders", basis: "field-reports", handoff: null }
+                        ]);
+                    }, 4000);
+                }, 1500);
+                
+            } else if (action === 'create-confirmed-workorders') {
+                // M3 work order creation based on field confirmation
+                setTimeout(() => {
+                    workflowDiv.innerHTML = `📋 M3 Work Orders Created from Field Reports`;
+                    
+                    setTimeout(() => {
+                        addAIMessage('Dispatch Dana', `📦 M3 SYSTEM - WORK ORDERS GENERATED:
+• **WO-78451-FIBER**: 200ft armored fiber cable + splice equipment
+  - Part Numbers: FBR-ARM-200 (fiber), SPL-KIT-144 (splice kit)
+  - Source: Field crew confirmed 200ft exact measurement
+• **WO-78452-OLT**: Nokia 7360 ISAM FX-8 complete replacement  
+  - Part Number: NK-7360-FX8-001
+  - Source: Field crew confirmed PSU failure, unit non-repairable
+• **Warehouse Status**: Oakland has Nokia unit, fiber cable expedited from San Jose`, null, [
+                            { text: "Dispatch crews to warehouse for parts pickup?", action: "warehouse-pickup-dispatch", orders: "confirmed", handoff: null },
+                            { text: "Coordinate repair timeline with field teams?", action: "coordinate-repairs", basis: "field-estimates", handoff: null },
+                            { text: "Update customer ETAs with confirmed timeline?", action: "update-confirmed-etas", handoff: "sophie" }
+                        ]);
+                    }, 2500);
+                }, 1000);
+                
+            } else if (action === 'warehouse-pickup-dispatch') {
+                // Warehouse coordination based on confirmed needs
+                setTimeout(() => {
+                    workflowDiv.innerHTML = `🚚 Warehouse Pickup Coordination Based on Field Confirmation`;
+                    
+                    setTimeout(() => {
+                        addAIMessage('Dispatch Dana', `🏭 WAREHOUSE PICKUP STATUS:
+• Oakland warehouse: Nokia 7360 reserved for CREW-CA-BAY-015 pickup
+• San Jose depot: 200ft armored fiber cable expedited to SF crew location  
+• Pickup timeline: Oakland crew 25min, SF direct delivery 45min
+• Installation estimates: Oakland 45min, SF splice 90min
+• Total restoration time: Confirmed with field crews based on actual damage assessment`, null, [
+                            { text: "Monitor pickup and installation progress?", action: "monitor-installation", phase: "parts-pickup", handoff: null },
+                            { text: "Send confirmed ETAs to customers?", action: "confirmed-customer-etas", timing: "field-verified", handoff: "sophie" }
+                        ]);
+                    }, 2000);
+                    
+                    setTimeout(() => {
+                        addAIMessage('Dispatch Dana', `⚡ PARTS RETRIEVED - INSTALLATION PHASE:
+• Oakland crew: Nokia unit retrieved, installation in progress (30% complete)
+• SF crew: Fiber cable delivered on-site, splice work beginning
+• Field updates: Oakland crew reports "old unit removed, new unit mounting"
+• Combined ETA: Service restoration in 60-75 minutes based on field progress`, null, [
+                            { text: "Continue installation monitoring?", action: "monitor-completion", focus: "both-sites", handoff: null }
+                        ]);
+                    }, 8000);
+                }, 1500);
+                
+            } else if (action === 'track-crew-progress') {
+                // Live crew tracking with GPS updates
+                setTimeout(() => {
+                    workflowDiv.innerHTML = `📍 Live GPS Tracking Activated`;
+                    
+                    setTimeout(() => {
+                        addAIMessage('Dispatch Dana', `📍 CREW PROGRESS UPDATE:
+• Location: Market St & 10th (ETA 38 minutes)
+• Status: En route, traffic optimal
+• Equipment: All tools loaded and verified
+• Crew lead: Thomas Anderson reporting ready`, null, [
+                            { text: "Get live updates every 10 minutes?", action: "continuous-tracking", interval: "10min", handoff: null }
+                        ]);
+                    }, 2000);
+                    
+                    setTimeout(() => {
+                        addAIMessage('Dispatch Dana', `🔧 CREW ON SITE - ASSESSMENT COMPLETE:
+• Arrival confirmed at SP-2847 splice point
+• Damage assessment: 200ft section needs replacement
+• Repair time estimate: 90 minutes for fiber splice
+• Crew requesting backup cable from warehouse`, null, [
+                            { text: "Send warehouse crew with cable?", action: "warehouse-dispatch", item: "fiber-cable", handoff: null },
+                            { text: "Coordinate Oakland OLT repair simultaneously?", action: "coordinate-repairs", sites: "2", handoff: null }
+                        ]);
+                    }, 8000);
+                }, 1000);
+                
+            } else if (action === 'proactive-sms') {
+                // Proactive SMS to customers with realistic timing
+                setTimeout(() => {
+                    workflowDiv.innerHTML = `📱 SMS Blast Initiated to 2,847 customers`;
+                    
+                    setTimeout(() => {
+                        addAIMessage('Sentiment Sophie', `📱 PROACTIVE SMS CAMPAIGN RESULTS:
+• Message sent: "Service restoration in progress due to construction damage. Crews on site. Expected restoration: 1-2 hours. Updates at Frontier.com"
+• Delivery rate: 97.2% (2,767 delivered, 80 failed)
+• Immediate impact: Contact center call volume reduced by 89%
+• Customer responses: 34 replies thanking for proactive communication
+• Sentiment improvement: From -0.6 to -0.2 within 15 minutes`, null, [
+                            { text: "Send follow-up when restoration complete?", action: "schedule-followup-sms", trigger: "service-restored", handoff: null },
+                            { text: "Monitor social media sentiment?", action: "social-monitoring", platforms: "Twitter, NextDoor", handoff: null }
+                        ]);
+                    }, 3000);
+                }, 1500);
+                
+            } else if (action === 'prep-replacement') {
+                // Equipment replacement preparation with M3 integration
+                setTimeout(() => {
+                    workflowDiv.innerHTML = `⚙️ M3 Work Order System Integration Active`;
+                    
+                    setTimeout(() => {
+                        addAIMessage('Dispatch Dana', `📋 M3 WORK ORDER CREATED:
+• Work Order: WO-78452-OLT-REPL
+• Equipment: Nokia 7360 ISAM FX-8 (Part #NK-7360-FX8-001)
+• Oakland warehouse: CONFIRMED IN STOCK
+• Pickup time: 30 minutes (warehouse → site transport)
+• Installation estimate: 45 minutes (power down → swap → power up → test)
+• Customer restoration ETA: 75 minutes total`, null, [
+                            { text: "Dispatch crew to warehouse now?", action: "crew-to-warehouse", eta: "30min", handoff: null },
+                            { text: "Update customer ETA to 1-2 hours?", action: "update-customer-eta", time: "75min", handoff: "sophie" },
+                            { text: "Schedule maintenance window?", action: "maintenance-window", duration: "45min", handoff: null }
+                        ]);
+                    }, 2500);
+                }, 1000);
+                
+            } else if (action === 'crew-to-warehouse') {
+                // Warehouse coordination with realistic timing
+                setTimeout(() => {
+                    workflowDiv.innerHTML = `🏭 Oakland Warehouse Coordination Active`;
+                    
+                    setTimeout(() => {
+                        addAIMessage('Dispatch Dana', `🚛 WAREHOUSE TO SITE COORDINATION:
+• CREW-CA-BAY-015 dispatched to Oakland warehouse
+• Equipment reserved: Nokia 7360 ISAM FX-8, Serial: NK78452-A01
+• Pickup ETA: 12 minutes (warehouse prep + loading)
+• Transport to OAKLCA03 site: 18 minutes
+• Parallel progress: SF fiber crew still working on trunk repair
+• Coordination strategy: Both repairs completing simultaneously`, null, [
+                            { text: "Track both repair teams progress?", action: "dual-tracking", teams: "fiber+equipment", handoff: null },
+                            { text: "Send updated ETA to customers?", action: "update-sms", message: "Repairs 70% complete", handoff: "sophie" }
+                        ]);
+                    }, 2000);
+                    
+                    setTimeout(() => {
+                        addAIMessage('Dispatch Dana', `⚡ EQUIPMENT INSTALLATION IN PROGRESS:
+• Oakland crew: Equipment retrieved, installation started
+• Progress: Old OLT powered down, new unit being mounted
+• SF crew: Fiber splice 60% complete
+• Combined ETA: Service restoration in 35-40 minutes
+• Customer impact: Final phase of outage`, null, [
+                            { text: "Prepare service restoration notifications?", action: "prep-restoration-sms", timing: "35min", handoff: "sophie" }
+                        ]);
+                    }, 8000);
+                }, 1500);
+                
+            } else if (action === 'update-agent-scripts') {
+                // Agent script updates for contact center
+                setTimeout(() => {
+                    workflowDiv.innerHTML = `📞 Contact Center Agent Scripts Updated`;
+                    
+                    setTimeout(() => {
+                        addAIMessage('Deep End Louie', `📞 AGENT BRIEFING COMPLETE:
+• All 47 active agents notified via internal chat
+• Updated script: "We're aware of the service issue in your area. Our crews are currently on site repairing damaged fiber lines caused by construction. We expect service to be restored within the next hour. You should have already received a text message with updates."
+• Agent performance: 100% adoption of new script within 5 minutes
+• Call handling: Average handle time reduced due to proactive information
+• Customer satisfaction: Early indicators show improved call experience`, null, [
+                            { text: "Monitor agent performance during resolution?", action: "monitor-agents", focus: "customer-satisfaction", handoff: null },
+                            { text: "Prepare completion notification for agents?", action: "prep-completion-alert", scope: "all-agents", handoff: null }
+                        ]);
+                    }, 2500);
+                }, 1000);
+                
+            } else if (action === 'completion-notification') {
+                // Service restoration completion workflow
+                setTimeout(() => {
+                    workflowDiv.innerHTML = `🎉 Service Restoration Complete - Notifying All Stakeholders`;
+                    
+                    setTimeout(() => {
+                        addAIMessage('Deep End Louie', `✅ INCIDENT RESOLUTION COMPLETE:
+• Service restored to all 2,847 customers at 16:23 PST
+• Total outage duration: 78 minutes (under 90min SLA target)
+• Agent notification sent: "Service has been restored to all customers in the affected area. Customers may need to power cycle equipment if service doesn't resume automatically."
+• Final customer SMS: "Great news! Service has been restored to your area. If you're still experiencing issues, try unplugging your equipment for 30 seconds. Thank you for your patience."
+• Workflow success: All 5 AI agents coordinated seamlessly`, null, [
+                            { text: "Generate success story report?", action: "generate-report", type: "ai-orchestration-success", handoff: null },
+                            { text: "Schedule post-incident review?", action: "schedule-pir", participants: "cross-functional", handoff: null },
+                            { text: "Update training materials with this case?", action: "update-training", case: "INC-2024-78451", handoff: null }
+                        ]);
+                    }, 3000);
+                }, 2000);
+                
+            } else if (action === 'generate-report') {
+                // Generate comprehensive incident report
+                setTimeout(() => {
+                    workflowDiv.innerHTML = `📊 Generating Comprehensive Incident Report`;
+                    
+                    setTimeout(() => {
+                        addAIMessage('Deep End Louie', `📊 INCIDENT ANALYSIS REPORT GENERATED:
+
+**INCIDENT SUMMARY: INC-2024-78451**
+• **Root Cause**: Construction damage to fiber trunk by CalTrans crew
+• **Resolution Time**: 78 minutes (under 90min SLA)
+• **Customer Impact**: 2,847 customers, sentiment recovered to near-baseline
+• **Financial Impact**: $284K revenue risk mitigated through proactive communication
+
+**AI ORCHESTRATION SUCCESS METRICS**:
+• **Response Time**: 5 minutes faster than traditional workflow
+• **Customer Communication**: 89% call deflection through proactive SMS
+• **Agent Efficiency**: 100% script adoption, zero escalations
+• **Workflow Coordination**: Perfect handoff execution across all 5 AI agents
+• **Cost Savings**: Estimated $45K saved through optimized response
+
+**KEY LEARNINGS**: Proactive customer communication is the #1 factor in maintaining customer satisfaction during outages.`, null, [
+                            { text: "Share report with executive team?", action: "share-executive", recipients: "VP-Ops, CTO", handoff: null },
+                            { text: "Add to NOC training library?", action: "add-training-library", category: "ai-orchestration", handoff: null }
+                        ]);
+                    }, 4000);
+                }, 2000);
+                
+            } else if (params.handoff) {
+                // Standard workflow handoff
+                setTimeout(() => {
+                    workflowDiv.innerHTML = `✓ Handoff to ${agents[params.handoff]?.name}`;
+                    
+                    setTimeout(() => {
+                        advanceWorkflowChain();
+                    }, 1000);
+                }, 2000);
+            } else {
+                // Default action completion
+                setTimeout(() => {
+                    workflowDiv.innerHTML = `✓ ${action.replace('-', ' ')} completed`;
+                }, 2000);
+            }
+        }
+
+        function highlightConnections(selectedNode) {
+            currentNode.select("circle").style("opacity", 0.3);
+            currentLink.style("opacity", 0.1);
+
+            currentNode.filter(d => d.id === selectedNode.id)
+                .select("circle")
+                .style("opacity", 1);
+
+            networkData.links.forEach(l => {
+                if (l.source.id === selectedNode.id || l.target.id === selectedNode.id) {
+                    currentNode.filter(d => d.id === l.source.id || d.id === l.target.id)
+                        .select("circle")
+                        .style("opacity", 1);
+                    
+                    currentLink.filter(linkData => linkData === l)
+                        .style("opacity", 0.8);
+                }
+            });
+
+            setTimeout(() => {
+                currentNode.select("circle").style("opacity", 1);
+                currentLink.style("opacity", 1);
+            }, 3000);
+        }
+
+        // Drag functions
+        function dragstarted(event, d) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+        }
+
+        function dragged(event, d) {
+            d.fx = event.x;
+            d.fy = event.y;
+        }
+
+        function dragended(event, d) {
+            if (!event.active) simulation.alphaTarget(0);
+            d.fx = null;
+            d.fy = null;
+        }
+
+        // Double-click expansion (keeping original functionality)
+        function handleDoubleClick(event, d) {
+            if (currentTooltip) {
+                currentTooltip.remove(); 
+                currentTooltip = null;
+            }
+            
+            event.preventDefault();
+            event.stopPropagation();
+            
+            if (expandedNodes.has(d.id)) {
+                collapseNode(d);
+            } else {
+                expandNode(d);
+            }
+        }
+
+        function expandNode(parentNode) {
+            if (expandedNodes.has(parentNode.id)) return;
+            
+            expandedNodes.add(parentNode.id);
+            const newNodes = generateChildNodes(parentNode);
+            const newLinks = [];
+            
+            newNodes.forEach((child, index) => {
+                const radius = 60;
+                const angle = (2 * Math.PI * index) / newNodes.length;
+                
+                child.x = parentNode.x + radius * Math.cos(angle);
+                child.y = parentNode.y + radius * Math.sin(angle);
+                child.fx = child.x;
+                child.fy = child.y;
+                child.parentId = parentNode.id;
+                
+                newLinks.push({
+                    source: parentNode.id,
+                    target: child.id,
+                    type: "expansion"
+                });
+            });
+            
+            networkData.nodes.push(...newNodes);
+            networkData.links.push(...newLinks);
+            
+            updateGraph();
+            showNotification(`Expanded ${parentNode.name} - ${newNodes.length} components revealed`);
+        }
+
+        function collapseNode(parentNode) {
+            if (!expandedNodes.has(parentNode.id)) return;
+            
+            expandedNodes.delete(parentNode.id);
+            
+            // Find all child nodes (including nested children)
+            const nodesToRemove = [];
+            const linksToRemove = [];
+            
+            function findChildNodes(nodeId) {
+                const directChildren = networkData.nodes.filter(n => n.parentId === nodeId);
+                directChildren.forEach(child => {
+                    nodesToRemove.push(child.id);
+                    // Recursively find children of children
+                    findChildNodes(child.id);
+                });
+            }
+            
+            // Find all descendant nodes
+            findChildNodes(parentNode.id);
+            
+            console.log(`Collapsing ${parentNode.name}, removing ${nodesToRemove.length} child nodes`);
+            
+            // Remove child nodes from data
+            networkData.nodes = networkData.nodes.filter(n => !nodesToRemove.includes(n.id));
+            
+            // Remove all links connected to removed nodes
+            networkData.links = networkData.links.filter(l => 
+                !nodesToRemove.includes(l.source.id || l.source) && 
+                !nodesToRemove.includes(l.target.id || l.target)
+            );
+            
+            // Also remove from expandedNodes set if any child nodes were expanded
+            nodesToRemove.forEach(nodeId => {
+                expandedNodes.delete(nodeId);
+            });
+            
+            // Force a complete graph update to remove visual elements
+            updateGraph();
+            
+            showNotification(`Collapsed ${parentNode.name} - removed ${nodesToRemove.length} components`);
+        }
+
+        function generateChildNodes(parentNode) {
+            const childNodes = [];
+            
+            switch(parentNode.type) {
+                case 'clli':
+                    // CLLI locations show network equipment, VLANs, and circuits
+                    if (parentNode.id === 'SNFCCA01') {
+                        childNodes.push(
+                            { id: `${parentNode.id}-VLAN-100`, name: "VLAN-100", type: "network-component", size: 8, componentType: "vlan", details: "Residential Services", status: "Operational" },
+                            { id: `${parentNode.id}-VLAN-200`, name: "VLAN-200", type: "network-component", size: 8, componentType: "vlan", details: "Business Services", status: "Operational" },
+                            { id: `${parentNode.id}-RTR-CORE-01`, name: "Core Router 01", type: "network-component", size: 10, componentType: "router", details: "Cisco ASR-9006", status: "Operational" },
+                            { id: `${parentNode.id}-CIRCUIT-A01`, name: "Circuit A01", type: "network-component", size: 9, componentType: "circuit", details: "144-strand fiber", status: "Failed" },
+                            { id: `${parentNode.id}-CIRCUIT-A02`, name: "Circuit A02", type: "network-component", size: 9, componentType: "circuit", details: "96-strand fiber", status: "Degraded" }
+                        );
+                    } else if (parentNode.id === 'OAKLCA03') {
+                        childNodes.push(
+                            { id: `${parentNode.id}-VLAN-300`, name: "VLAN-300", type: "network-component", size: 8, componentType: "vlan", details: "Oakland Metro", status: "Operational" },
+                            { id: `${parentNode.id}-RTR-DIST-02`, name: "Distribution Router", type: "network-component", size: 10, componentType: "router", details: "Cisco ASR-920", status: "Operational" },
+                            { id: `${parentNode.id}-CIRCUIT-B01`, name: "Circuit B01", type: "network-component", size: 9, componentType: "circuit", details: "48-strand distribution", status: "Operational" }
+                        );
+                    }
+                    break;
+                    
+                case 'infrastructure':
+                    // Fiber infrastructure shows splice points, segments, and signal quality
+                    if (parentNode.id === 'FBR-CA-SNFC-TRUNK-A01') {
+                        childNodes.push(
+                            { id: `${parentNode.id}-SEG-01`, name: "Segment 01", type: "network-component", size: 8, componentType: "fiber-segment", details: "0-2.1mi: -3.2dB", status: "Operational" },
+                            { id: `${parentNode.id}-SEG-02`, name: "Segment 02", type: "network-component", size: 8, componentType: "fiber-segment", details: "2.1-4.7mi: SEVERED", status: "Failed" },
+                            { id: `${parentNode.id}-SEG-03`, name: "Segment 03", type: "network-component", size: 8, componentType: "fiber-segment", details: "4.7-12.3mi: -2.8dB", status: "Operational" },
+                            { id: `${parentNode.id}-OTDR-01`, name: "OTDR Reading", type: "network-component", size: 6, componentType: "measurement", details: "Loss: 15.7dB @ 2.1mi", status: "Alert" }
+                        );
+                    }
+                    break;
+                    
+                case 'equipment':
+                    // Equipment shows ports, interfaces, and status details
+                    if (parentNode.id === 'EQ-SNFCCA01-OLT-01') {
+                        childNodes.push(
+                            { id: `${parentNode.id}-PON-01`, name: "PON Port 1", type: "network-component", size: 6, componentType: "port", details: "32 ONTs - OFFLINE", status: "Failed" },
+                            { id: `${parentNode.id}-PON-02`, name: "PON Port 2", type: "network-component", size: 6, componentType: "port", details: "28 ONTs - OFFLINE", status: "Failed" },
+                            { id: `${parentNode.id}-UPLINK-01`, name: "Uplink Port", type: "network-component", size: 7, componentType: "port", details: "10Gb - DOWN", status: "Failed" },
+                            { id: `${parentNode.id}-MGMT-01`, name: "Management", type: "network-component", size: 5, componentType: "interface", details: "192.168.100.10", status: "Operational" }
+                        );
+                    } else if (parentNode.id === 'EQ-OAKLCA03-OLT-02') {
+                        childNodes.push(
+                            { id: `${parentNode.id}-PON-03`, name: "PON Port 3", type: "network-component", size: 6, componentType: "port", details: "31 ONTs - FAILED", status: "Failed" },
+                            { id: `${parentNode.id}-PON-04`, name: "PON Port 4", type: "network-component", size: 6, componentType: "port", details: "29 ONTs - FAILED", status: "Failed" },
+                            { id: `${parentNode.id}-PSU-01`, name: "Power Supply", type: "network-component", size: 5, componentType: "component", details: "FAULT DETECTED", status: "Failed" }
+                        );
+                    }
+                    break;
+                    
+                case 'outage':
+                    // Outages show affected service types clearly
+                    if (parentNode.id === 'OUT-2024-CA-001') {
+                        childNodes.push(
+                            { id: `${parentNode.id}-RESIDENTIAL`, name: "Residential Services", type: "network-component", size: 12, componentType: "service-type", details: "2,458 customers affected", status: "Failed" },
+                            { id: `${parentNode.id}-BUSINESS`, name: "Business Services", type: "network-component", size: 10, componentType: "service-type", details: "389 customers affected", status: "Failed" }
+                        );
+                    } else if (parentNode.id === 'OUT-2024-CA-003') {
+                        childNodes.push(
+                            { id: `${parentNode.id}-OAKLAND-RES`, name: "Oakland Residential", type: "network-component", size: 10, componentType: "service-type", details: "892 customers affected", status: "Failed" }
+                        );
+                    }
+                    break;
+                    
+                case 'customer':
+                    // Customer nodes - Complete hierarchy: Customer > Product Group
+                    if (parentNode.id === 'CUSTOMERS-RES') {
+                        childNodes.push(
+                            { id: `${parentNode.id}-FIBER-1G`, name: "1Gig Fiber Plans", type: "network-component", size: 12, componentType: "product-group", details: "1,847 customers affected", status: "Failed" },
+                            { id: `${parentNode.id}-FIBER-500M`, name: "500Mb Fiber Plans", type: "network-component", size: 10, componentType: "product-group", details: "611 customers affected", status: "Failed" }
+                        );
+                    } else if (parentNode.id === 'CUSTOMERS-BUS') {
+                        childNodes.push(
+                            { id: `${parentNode.id}-BUS-FIBER`, name: "Business Fiber", type: "network-component", size: 10, componentType: "product-group", details: "389 enterprise customers affected", status: "Failed" }
+                        );
+                    } else if (parentNode.id === 'CUSTOMERS-OAKL') {
+                        childNodes.push(
+                            { id: `${parentNode.id}-OAKL-FIBER`, name: "Oakland Fiber Services", type: "network-component", size: 10, componentType: "product-group", details: "892 customers affected", status: "Failed" }
+                        );
+                    }
+                    break;
+                    
+                case 'network-component':
+                    if (parentNode.componentType === 'service-type') {
+                        // Service types expand to show product groups
+                        if (parentNode.name.includes('Residential')) {
+                            childNodes.push(
+                                { id: `${parentNode.id}-FIBER-1G`, name: "1Gig Fiber Plans", type: "network-component", size: 12, componentType: "product-group", details: "1,847 customers affected", status: "Failed" },
+                                { id: `${parentNode.id}-FIBER-500M`, name: "500Mb Fiber Plans", type: "network-component", size: 10, componentType: "product-group", details: "611 customers affected", status: "Failed" }
+                            );
+                        } else if (parentNode.name.includes('Business')) {
+                            childNodes.push(
+                                { id: `${parentNode.id}-BUS-FIBER`, name: "Business Fiber", type: "network-component", size: 10, componentType: "product-group", details: "389 enterprise customers affected", status: "Failed" }
+                            );
+                        }
+                    } else if (parentNode.componentType === 'product-group') {
+                        // Product groups expand to show customer intents/call reasons
+                        childNodes.push(
+                            { id: `${parentNode.id}-INTENT-OUTAGE`, name: "Outage Reports", type: "network-component", size: 11, componentType: "customer-intent", details: "67% of calls, avg NPS: 2.1", status: "Alert" },
+                            { id: `${parentNode.id}-INTENT-SLOW`, name: "Slow Speed Complaints", type: "network-component", size: 9, componentType: "customer-intent", details: "23% of calls, avg NPS: 3.4", status: "Warning" },
+                            { id: `${parentNode.id}-INTENT-EQUIPMENT`, name: "Equipment Issues", type: "network-component", size: 8, componentType: "customer-intent", details: "10% of calls, avg NPS: 4.2", status: "Operational" }
+                        );
+                    } else if (parentNode.componentType === 'customer-intent') {
+                        // Customer intents expand to show contact centers handling them
+                        childNodes.push(
+                            { id: `${parentNode.id}-CC-SF`, name: "SF Technical Support", type: "network-component", size: 10, componentType: "contact-center", details: "Primary center, 28 agents active", status: "Operational" },
+                            { id: `${parentNode.id}-CC-OVERFLOW`, name: "Denver Overflow", type: "network-component", size: 8, componentType: "contact-center", details: "Backup center, 15 agents active", status: "Operational" }
+                        );
+                    } else if (parentNode.componentType === 'contact-center') {
+                        // Contact centers expand to show individual agents
+                        childNodes.push(
+                            { id: `${parentNode.id}-AGENT-SARAH`, name: "Sarah Chen", type: "network-component", size: 9, componentType: "agent", details: "Fiber specialist, 28 calls today, 4.8 NPS", status: "Operational" },
+                            { id: `${parentNode.id}-AGENT-MARCUS`, name: "Marcus Torres", type: "network-component", size: 9, componentType: "agent", details: "Senior tech, 31 calls today, 4.2 NPS", status: "Operational" },
+                            { id: `${parentNode.id}-AGENT-JENNIFER`, name: "Jennifer Park", type: "network-component", size: 8, componentType: "agent", details: "L1 support, 22 calls today, 3.9 NPS", status: "Operational" }
+                        );
+                    } else if (parentNode.componentType === 'agent') {
+                        // Agents expand to show individual customers they're helping
+                        childNodes.push(
+                            { id: `${parentNode.id}-CUST1`, name: "Michael Anderson", type: "network-component", size: 8, componentType: "individual-customer", details: "Account: RES-78451, NPS: 3, Issue: Home office down 4hrs", status: "Alert" },
+                            { id: `${parentNode.id}-CUST2`, name: "Jennifer Wong", type: "network-component", size: 8, componentType: "individual-customer", details: "Account: RES-78452, NPS: 2, Issue: Total service outage", status: "Failed" },
+                            { id: `${parentNode.id}-CUST3`, name: "David Rodriguez", type: "network-component", size: 7, componentType: "individual-customer", details: "Account: RES-78453, NPS: 4, Issue: Intermittent slowdowns", status: "Warning" }
+                        );
+                    }
+                    break;
+            }
+            
+            return childNodes;
+        }
+
+        // Chat window minimize/maximize functionality
+        document.getElementById('chatMinimizeBtn').addEventListener('click', function(e) {
+            e.stopPropagation(); // Prevent header click event
+            const chatPanel = document.getElementById('chatPanel');
+            const isMinimized = chatPanel.classList.contains('minimized');
+            
+            if (isMinimized) {
+                // Maximize
+                chatPanel.classList.remove('minimized');
+                this.textContent = '−';
+                this.title = 'Minimize Chat';
+                showNotification('Chat window maximized');
+            } else {
+                // Minimize
+                chatPanel.classList.add('minimized');
+                this.textContent = '□';
+                this.title = 'Maximize Chat';
+                showNotification('Chat window minimized');
+            }
+        });
+
+        // Also allow clicking the header to toggle minimize/maximize
+        document.getElementById('chatHeader').addEventListener('click', function(e) {
+            // Only trigger if clicking the header itself, not the minimize button
+            if (!e.target.closest('.chat-minimize-btn')) {
+                document.getElementById('chatMinimizeBtn').click();
+            }
+        });
+
+        // Event listeners
+        document.getElementById('chatInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && this.value.trim()) {
+                const message = this.value.trim();
+                addChatMessage('User', message);
+                this.value = '';
+                
+                const chatMessages = document.getElementById('chatMessages');
+                const processingDiv = document.createElement('div');
+                processingDiv.className = 'workflow-indicator';
+                processingDiv.innerHTML = `<div class="loading"></div>Processing enhanced query...`;
+                chatMessages.appendChild(processingDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                
+                setTimeout(() => {
+                    processingDiv.remove();
+                    const queryResult = processNaturalLanguageQuery(message);
+                    addAIMessage('GigaPulse Enhanced AI', queryResult.response, null, queryResult.actions);
+                }, 1500);
+            }
+        });
+
+        document.querySelectorAll('.ai-agent').forEach(agent => {
+            agent.addEventListener('click', function() {
+                const agentId = this.dataset.agent;
+                setActiveAgent(agentId);
+                triggerWorkflowChain(agentId, 'manual-activation', {});
+            });
+        });
+
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                const tabId = this.dataset.tab;
+                
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.style.display = content.id === `${tabId}-tab` ? 'block' : 'none';
+                });
+
+                // Create time series charts when metrics tab is activated
+                if (tabId === 'metrics') {
+                    setTimeout(() => {
+                        createTimeSeriesChart("customers-chart", [0, 1200, 2800, 3900, 4991, 4991], "#FF0037");
+                        createTimeSeriesChart("deflection-chart", [65, 78, 83, 87, 90, 91.3], "#96FFF5");
+                        createTimeSeriesChart("nps-chart", [6.2, 5.8, 5.4, 4.9, 4.5, 4.2], "#FFA500");
+                        createTimeSeriesChart("truckroll-chart", [45, 52, 58, 62, 65, 67], "#00FF88");
+                    }, 100);
+                } else if (tabId === 'analytics') {
+                    setTimeout(() => {
+                        createTimeSeriesChart("sentiment-trend", [-0.1, -0.2, -0.35, -0.45, -0.55, -0.6], "#FF0037");
+                    }, 100);
+                }
+            });
+        });
+
+        document.getElementById('showAnalytics').addEventListener('click', toggleAnalyticsDashboard);
+
+        document.getElementById('resetView').addEventListener('click', function() {
+            svg.transition().duration(750).call(
+                zoom.transform,
+                d3.zoomIdentity.translate(0, 0).scale(1)
+            );
+            simulation.alpha(1).restart();
+        });
+
+        document.getElementById('legendToggle').addEventListener('click', function() {
+            const legend = document.getElementById('legend');
+            const isVisible = legend.style.display !== 'none';
+            
+            if (isVisible) {
+                legend.style.display = 'none';
+                this.textContent = 'Legend';
+            } else {
+                legend.style.display = 'block';
+                this.textContent = 'Hide Legend';
+            }
+        });
+
+        // Clear tooltip when clicking on empty space
+        svg.on('click', function(event) {
+            if (event.target === this) {
+                if (currentTooltip) {
+                    currentTooltip.remove();
+                    currentTooltip = null;
+                }
+            }
+        });
+
+        // Initialize with enhanced demo workflow
+        setTimeout(() => {
+            triggerWorkflowChain('charlie', 'initial-analysis', { id: 'demo-startup' });
+        }, 2000);
+
+        // Auto-resize handler
+        window.addEventListener('resize', function() {
+            const newWidth = svg.node().getBoundingClientRect().width;
+            const newHeight = svg.node().getBoundingClientRect().height;
+            simulation.force("center", d3.forceCenter(newWidth / 2, newHeight / 2));
+            simulation.alpha(1).restart();
+            zoom.extent([[0, 0], [newWidth, newHeight]]);
+        });
+    </script>
+</body>
+</html>
